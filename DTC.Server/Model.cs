@@ -1,10 +1,11 @@
-using System;
-using Microsoft.SPOT;
-using MFE.Storage;
 using Gadgeteer.Networking;
-using System.IO;
-using System.Text;
 using MFE;
+using MFE.Net.Http;
+using MFE.Storage;
+using System.Collections;
+using System.IO;
+using System.Net;
+using System.Text;
 
 namespace DTC.Server
 {
@@ -13,6 +14,7 @@ namespace DTC.Server
         #region Fields
         //private static Options options;
         //private const uint optionsID = 0;
+
         //private static string root = @"\SD"; // for device
         private static string root = @"\WINFS"; // for emulator
 
@@ -29,7 +31,7 @@ namespace DTC.Server
         ////private static TCPServer tcpServer;
         //private static WebSocketServer wsServer;
 
-        //private static WebServer httpServer;
+        private static HttpServer httpServer;
 
         //private static Buttons btns;
         #endregion
@@ -72,14 +74,13 @@ namespace DTC.Server
             //wsServer.SessionDataReceived += new TcpSessionDataReceived(Session_DataReceived);
             //wsServer.SessionDisconnected += new TcpSessionEventHandler(Session_Disconnected);
 
-            WebServer.StartLocalServer(""/*eth.NetworkInterface.IPAddress*/, 80);
-            WebServer.DefaultEvent.WebEventReceived += DefaultEvent_WebEventReceived;
-            WebServer.SetupWebEvent("test/").WebEventReceived += webEvent_WebEventReceived;
 
-            
-            //httpServer.OnGetRequest += new GETRequestHandler(httpServer_OnGetRequest);
+            //WebServer.StartLocalServer(""/*eth.NetworkInterface.IPAddress*/, 80);
+            //WebServer.DefaultEvent.WebEventReceived += DefaultEvent_WebEventReceived;
+            //WebServer.SetupWebEvent("test/").WebEventReceived += webEvent_WebEventReceived;
 
-
+            httpServer = new HttpServer();
+            httpServer.OnGetRequest += httpServer_OnGetRequest;
 
 
 
@@ -90,11 +91,12 @@ namespace DTC.Server
             //networkManager.Started += new EventHandler(Network_Started);
             //networkManager.Stopped += new EventHandler(Network_Stopped);
 
-            //StartNetwork();
+            StartNetwork();
         }
         private static void StartNetwork()
         {
             //new Thread(delegate { networkManager.Start(); }).Start();
+            httpServer.Start("http", 81); // for emulator only!!!
         }
         private static void InitDB()
         {
@@ -279,24 +281,23 @@ namespace DTC.Server
                 }
             }
         }
-
         // This method will only be called to handle a web request for http://xxx/test/
         private static void webEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
         {
             responder.Respond("Hello World, specific handler");
         }
 
-        //private static void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
-        //{
-        //    if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
-        //    {
-        //        //httpServer.ProcessPasswordProtectedArea(request, response);
-        //    }
-        //    else if (path.ToLower().IndexOf("json") != -1)
-        //        ProcessJSONRequest(path, parameters, response);
-        //    else
-        //        httpServer.SendFile(root + path, response);
-        //}
+        private static void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
+        {
+            if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
+            {
+                //httpServer.ProcessPasswordProtectedArea(request, response);
+            }
+            //else if (path.ToLower().IndexOf("json") != -1)
+            //    ProcessJSONRequest(path, parameters, response);
+            else
+                httpServer.SendFile(root + path, response);
+        }
 
         #endregion
     }

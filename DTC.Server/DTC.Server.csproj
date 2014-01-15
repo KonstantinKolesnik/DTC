@@ -65,6 +65,7 @@
     <Reference Include="Microsoft.SPOT.Net" />
     <Reference Include="Microsoft.SPOT.TinyCore" />
     <Reference Include="mscorlib" />
+    <Reference Include="System.Http" />
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +87,10 @@
     <None Include="Resources\small.tinyfnt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MFE.Net\MFE.Net.csproj">
+      <Project>{D87CB0D5-ED06-4E01-AA00-FFCDD0A3D708}</Project>
+      <Name>MFE.Net</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MFE.Storage\MFE.Storage.csproj">
       <Project>{B3AF4DFB-585D-477A-981A-0F5E69EC7A89}</Project>
       <Name>MFE.Storage</Name>
