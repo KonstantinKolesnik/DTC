@@ -321,7 +321,7 @@ namespace MFE.Net.Http
                     listener.HttpsCert = new X509Certificate(m_emulatorCertData, "NetMF");
                 else
                 {
-                    string serverCertAsString = MFE.Net.Resource1.GetString(MFE.Net.Resource1.StringResources.cert_device_microsoft_com);
+                    string serverCertAsString = Resource1.GetString(Resource1.StringResources.cert_device_microsoft_com);
                     byte[] serverCertAsArray = Encoding.UTF8.GetBytes(serverCertAsString);
                     listener.HttpsCert = new X509Certificate(serverCertAsArray);
                 }
@@ -737,7 +737,7 @@ namespace MFE.Net.Http
 
             // Following line adds file post capabilities
             strRet += "<p>Below is example of sending file data to HTTP server";
-            strRet += MFE.Net.Resource1.GetString(MFE.Net.Resource1.StringResources.PostForm);
+            strRet += Resource1.GetString(Resource1.StringResources.PostForm);
             // Next line shows link protected by password.
             strRet += "<br>Below is example of protected link.";
             strRet += "<br><A HREF=\"/PasswordProtected\">Password Protected Secure Area</A>";

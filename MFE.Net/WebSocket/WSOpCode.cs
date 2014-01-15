@@ -1,7 +1,7 @@
 
 namespace MFE.Net.WebSocket
 {
-    enum WebSocketOpCode
+    enum WSOpCode
     {
         Continuation = 0,
         Text = 1,

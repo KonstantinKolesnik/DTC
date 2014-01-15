@@ -1,11 +1,12 @@
+using MFE.Net.Tcp;
 using System.Text;
 
 namespace MFE.Net.WebSocket
 {
-    public class WebSocketServer
+    public class WSServer
     {
         #region Fields
-        private TCPServer tcpServer;
+        private TcpServer tcpServer;
         //private string origin;
         //private string location;
         #endregion
@@ -18,9 +19,9 @@ namespace MFE.Net.WebSocket
         #endregion
 
         #region Events
-        public event TCPSessionEventHandler SessionConnected;
-        public event TCPSessionDataReceivedEventHandler SessionDataReceived;
-        public event TCPSessionEventHandler SessionDisconnected;
+        public event TcpSessionEventHandler SessionConnected;
+        public event TcpSessionDataReceivedEventHandler SessionDataReceived;
+        public event TcpSessionEventHandler SessionDisconnected;
         #endregion
 
         #region Constructor
@@ -30,15 +31,15 @@ namespace MFE.Net.WebSocket
         /// <param name="port">the port to run on/listen to</param>
         /// <param name="origin">the url where connections are allowed to come from (e.g. http://localhost)</param>
         /// <param name="location">the url of this web socket server (e.g. ws://localhost:8181)</param>
-        public WebSocketServer(int port)//, string origin, string location)
+        public WSServer(int port)//, string origin, string location)
         {
             //this.origin = origin;
             //this.location = location;
 
-            tcpServer = new TCPServer(port);
-            tcpServer.SessionConnected += new TCPSessionEventHandler(tcpServer_SessionConnected);
-            tcpServer.SessionDataReceived += new TCPSessionDataReceivedEventHandler(tcpServer_SessionReceived);
-            tcpServer.SessionDisconnected += new TCPSessionEventHandler(tcpServer_SessionDisconnected);
+            tcpServer = new TcpServer(port);
+            tcpServer.SessionConnected += new TcpSessionEventHandler(tcpServer_SessionConnected);
+            tcpServer.SessionDataReceived += new TcpSessionDataReceivedEventHandler(tcpServer_SessionReceived);
+            tcpServer.SessionDisconnected += new TcpSessionEventHandler(tcpServer_SessionDisconnected);
         }
         #endregion
 
@@ -53,21 +54,21 @@ namespace MFE.Net.WebSocket
         }
         public void SendToAll(string message)
         {
-            tcpServer.SendToAll(WebSocketDataFrame.WrapString(message));
+            tcpServer.SendToAll(WSDataFrame.WrapString(message));
         }
         public void SendToAll(byte[] data, int offset, int length)
         {
-            tcpServer.SendToAll(WebSocketDataFrame.WrapBinary(data, offset, length));
+            tcpServer.SendToAll(WSDataFrame.WrapBinary(data, offset, length));
         }
         #endregion
 
         #region Event handlers
-        private void tcpServer_SessionConnected(TCPSession session)
+        private void tcpServer_SessionConnected(TcpSession session)
         {
             if (SessionConnected != null)
                 SessionConnected(session);
         }
-        private bool tcpServer_SessionReceived(TCPSession session, byte[] data)
+        private bool tcpServer_SessionReceived(TcpSession session, byte[] data)
         {
             if (!session.IsHandshaked)
             {
@@ -101,12 +102,12 @@ namespace MFE.Net.WebSocket
                 // location: ws://localhost:2013
                 // origin: "http://localhost:81"
 
-                WebSocketClientHandshake chs = WebSocketClientHandshake.FromBytes(data);
+                WSClientHandshake chs = WSClientHandshake.FromBytes(data);
                 //if (chs.IsValid && "ws://" + chs.Host == location && chs.Origin == origin)
                 //if (chs.IsValid && "ws://" + chs.Host == location)
                 if (chs.IsValid)
                 {
-                    WebSocketServerHandshake shs = new WebSocketServerHandshake(chs.Key);
+                    WSServerHandshake shs = new WSServerHandshake(chs.Key);
                     string stringShake = shs.ToString();
                     byte[] byteResponse = Encoding.UTF8.GetBytes(stringShake);
                     session.Send(byteResponse);
@@ -122,7 +123,7 @@ namespace MFE.Net.WebSocket
             }
             else
             {
-                WebSocketDataFrame frame = new WebSocketDataFrame(data);
+                WSDataFrame frame = new WSDataFrame(data);
                 byte[] payload = null;
                 if (frame.IsValid() && frame.FIN)
                     payload = frame.GetPayload();
@@ -135,7 +136,7 @@ namespace MFE.Net.WebSocket
                 return SessionDataReceived != null ? SessionDataReceived(session, payload) : false;
             }
         }
-        private void tcpServer_SessionDisconnected(TCPSession session)
+        private void tcpServer_SessionDisconnected(TcpSession session)
         {
             if (SessionDisconnected != null)
                 SessionDisconnected(session);

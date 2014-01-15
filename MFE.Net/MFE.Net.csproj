@@ -31,19 +31,28 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
+    <Compile Include="Http\HttpCookie.cs" />
+    <Compile Include="Http\HttpCookieCollection.cs" />
+    <Compile Include="Http\HttpCookieEnumerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Http\HttpServer.cs" />
-    <Compile Include="Resource1.Designer.cs" />
-    <Compile Include="WebSocket\WebSocketConstants.cs" />
-    <Compile Include="WebSocket\WebSocketDataFrame.cs" />
-    <Compile Include="WebSocket\WebSocketHandshakes.cs" />
-    <Compile Include="WebSocket\WebSocketOpCode.cs" />
+    <Compile Include="Http\Resource1.Designer.cs" />
+    <Compile Include="Tcp\TcpServer.cs" />
+    <Compile Include="Tcp\TcpSession.cs" />
+    <Compile Include="Tcp\TcpSessionDataReceivedEventHandler.cs" />
+    <Compile Include="Tcp\TcpSessionEventHandler.cs" />
+    <Compile Include="WebSocket\WSServer.cs" />
+    <Compile Include="WebSocket\WSConstants.cs" />
+    <Compile Include="WebSocket\WSDataFrame.cs" />
+    <Compile Include="WebSocket\WSHandshakes.cs" />
+    <Compile Include="WebSocket\WSOpCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
     <Reference Include="Microsoft.SPOT.Net" />
+    <Reference Include="System" />
     <Reference Include="System.Http" />
     <Reference Include="System.IO" />
   </ItemGroup>
@@ -54,9 +63,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resource1.resx" />
+    <EmbeddedResource Include="Http\Resource1.resx" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tcp\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

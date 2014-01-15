@@ -25,7 +25,7 @@ namespace MFE.Net.WebSocket
     
     */
 
-    public class WebSocketDataFrame
+    public class WSDataFrame
     {
         #region Fields
         private byte[] m_InnerData;
@@ -143,7 +143,7 @@ namespace MFE.Net.WebSocket
         #endregion
 
         #region Constructor
-        public WebSocketDataFrame(byte[] data) 
+        public WSDataFrame(byte[] data) 
         {
             m_InnerData = data;
         }
@@ -209,11 +209,11 @@ namespace MFE.Net.WebSocket
         public static byte[] WrapString(string message)
         {
             byte[] playloadData = Encoding.UTF8.GetBytes(message);
-            return CreateDataFrame(WebSocketOpCode.Text, playloadData, 0, playloadData.Length);
+            return CreateDataFrame(WSOpCode.Text, playloadData, 0, playloadData.Length);
         }
         public static byte[] WrapBinary(byte[] data, int offset, int length)
         {
-            return CreateDataFrame(WebSocketOpCode.Binary, data, offset, length);
+            return CreateDataFrame(WSOpCode.Binary, data, offset, length);
         }
         //public static byte[] WrapCloseHandshake(int statusCode, string closeReason)
         //{
@@ -237,13 +237,13 @@ namespace MFE.Net.WebSocket
         //}
         public static byte[] WrapPong(byte[] pong)
         {
-            return CreateDataFrame(WebSocketOpCode.Pong, pong, 0, pong.Length);
+            return CreateDataFrame(WSOpCode.Pong, pong, 0, pong.Length);
         }
         public static byte[] WrapPing(byte[] ping)
         {
-            return CreateDataFrame(WebSocketOpCode.Ping, ping, 0, ping.Length);
+            return CreateDataFrame(WSOpCode.Ping, ping, 0, ping.Length);
         }
-        private static byte[] CreateDataFrame(WebSocketOpCode opCode, byte[] data, int offset, int length)
+        private static byte[] CreateDataFrame(WSOpCode opCode, byte[] data, int offset, int length)
         {
             byte[] fragment;
 

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MFE.Net
+namespace MFE.Net.Http
 {
     
     internal partial class Resource1

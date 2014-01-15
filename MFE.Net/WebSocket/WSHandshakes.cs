@@ -1,10 +1,10 @@
+using MFE.Net.Http;
 using System.Collections;
 using System.Text;
-using MFE.Utilities;
 
 namespace MFE.Net.WebSocket
 {
-    public class WebSocketClientHandshake
+    public class WSClientHandshake
     {
         public string ResourcePath { get; set; }
         public string Host { get; set; } // socket = new WebSocket("ws://" + Host + ":" + port + '/' + resourcePath);
@@ -54,9 +54,9 @@ namespace MFE.Net.WebSocket
             return stringShake;
         }
 
-        public static WebSocketClientHandshake FromBytes(byte[] buffer)
+        public static WSClientHandshake FromBytes(byte[] buffer)
         {
-            WebSocketClientHandshake handshake = new WebSocketClientHandshake();
+            WSClientHandshake handshake = new WSClientHandshake();
 
             string hs = new string(Encoding.UTF8.GetChars(buffer));
             string[] lines = hs.Split('\r', '\n');
@@ -198,7 +198,7 @@ namespace MFE.Net.WebSocket
         }
     }
 
-    public class WebSocketServerHandshake
+    public class WSServerHandshake
     {
         private const string magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
@@ -206,7 +206,7 @@ namespace MFE.Net.WebSocket
         //public string SubProtocol { get { return "chat"; } }
         public string SubProtocol { get { return null; } }
 
-        public WebSocketServerHandshake(string clientKey)
+        public WSServerHandshake(string clientKey)
         {
             byte[] sha1 = SHA.computeSHA1(Encoding.UTF8.GetBytes(clientKey + magic));
             Accept = Utils.ToBase64String(sha1);

@@ -1,19 +1,19 @@
-using Gadgeteer.Networking;
-using MFE;
 using MFE.Net.Http;
+using MFE.Net.Messaging;
+using MFE.Net.Tcp;
+using MFE.Net.WebSocket;
 using MFE.Storage;
 using System.Collections;
-using System.IO;
 using System.Net;
-using System.Text;
+using System.Reflection;
 
 namespace DTC.Server
 {
     class Model
     {
         #region Fields
-        //private static Options options;
-        //private const uint optionsID = 0;
+        private static Options options;
+        private const uint optionsID = 0;
 
         //private static string root = @"\SD"; // for device
         private static string root = @"\WINFS"; // for emulator
@@ -26,14 +26,21 @@ namespace DTC.Server
 
         //private static INetworkManager networkManager;
 
-        //private static NetworkMessageFormat msgFormat = NetworkMessageFormat.Text;
-        ////private static DiscoveryListener discoveryListener;
-        ////private static TCPServer tcpServer;
-        //private static WebSocketServer wsServer;
+        private static NetworkMessageFormat msgFormat = NetworkMessageFormat.Text;
+        //private static DiscoveryListener discoveryListener;
+        //private static TCPServer tcpServer;
+        private static WSServer wsServer;
 
         private static HttpServer httpServer;
 
         //private static Buttons btns;
+        #endregion
+
+        #region Properties
+        public static string Version
+        {
+            get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }
+        }
         #endregion
 
         #region Constructor
@@ -42,8 +49,8 @@ namespace DTC.Server
             DriveManager.DriveAdded += DriveManager_DriveAdded;
 
             InitData();
-            //InitHardware();
-            ////InitDB();
+            InitHardware();
+            InitDB();
             InitNetwork();
 
             // for test only!!!
@@ -59,7 +66,41 @@ namespace DTC.Server
             //options = Options.LoadFromSD();
             //ApplyOptions();
         }
+        private static void InitHardware()
+        {
+            //mainBooster = new Booster(
+            //    true,
+            //    HardwareConfiguration.PinMainBoosterEnable,
+            //    HardwareConfiguration.PinMainBoosterEnableLED,
+            //    HardwareConfiguration.PinMainBoosterSense,
+            //    HardwareConfiguration.PinMainBoosterOverloadLED,
+            //    HardwareConfiguration.SenseResistor,
+            //    options.MainBridgeCurrentThreshould,
+            //    HardwareConfiguration.PinMainOutputGenerator,
+            //    DCCCommand.Idle().ToTimings()
+            //    );
+            //mainBooster.PropertyChanged += new PropertyChangedEventHandler(Booster_PropertyChanged);
 
+            //progBooster = new Booster(
+            //    true,
+            //    HardwareConfiguration.PinProgBoosterEnable,
+            //    HardwareConfiguration.PinProgBoosterEnableLED,
+            //    HardwareConfiguration.PinProgBoosterSense,
+            //    HardwareConfiguration.PinProgBoosterOverloadLED,
+            //    HardwareConfiguration.SenseResistor,
+            //    options.ProgBridgeCurrentThreshould,
+            //    HardwareConfiguration.PinProgOutputGenerator,
+            //    DCCCommand.Idle().ToTimings(true)
+            //    );
+            //progBooster.PropertyChanged += new PropertyChangedEventHandler(Booster_PropertyChanged);
+
+            //if (options.BroadcastBoostersCurrent)
+            //    timerBoostersCurrent = new Timer(TimerBustersCurrent_Tick, null, 0, 1000);
+
+            ////ackDetector = new AcknowledgementDetector(HardwareConfiguration.PinAcknowledgementSense);
+
+            //btns = new Buttons();
+        }
         private static void InitNetwork()
         {
             //discoveryListener = new DiscoveryListener();
@@ -69,10 +110,10 @@ namespace DTC.Server
             //tcpServer.SessionDataReceived += new TCPSessionDataReceived(Session_DataReceived);
             //tcpServer.SessionDisconnected += new TCPSessionEventHandler(Session_Disconnected);
 
-            //wsServer = new WebSocketServer(Options.WSPort);
-            //wsServer.SessionConnected += new TcpSessionEventHandler(Session_Connected);
-            //wsServer.SessionDataReceived += new TcpSessionDataReceived(Session_DataReceived);
-            //wsServer.SessionDisconnected += new TcpSessionEventHandler(Session_Disconnected);
+            wsServer = new WSServer(Options.WSPort);
+            wsServer.SessionConnected += Session_Connected;
+            wsServer.SessionDataReceived += Session_DataReceived;
+            wsServer.SessionDisconnected += Session_Disconnected;
 
 
             //WebServer.StartLocalServer(""/*eth.NetworkInterface.IPAddress*/, 80);
@@ -153,79 +194,78 @@ namespace DTC.Server
             //}
         }
 
-        private static void Response404(Responder responder)
-        {
-            string strResp = "<!DOCTYPE html PUBLIC \" -//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">";
-            strResp += "<html><head></head><body>.Net Micro Framework Example HTTP Server";
-            // Print requested verb, URL and version.. Adds information from the request.
-            //strResp += "HTTP Method: " + responder.HttpMethod + "<br> Requested URL: \"" + request.RawUrl + "<br> HTTP Version: " + responder.ProtocolVersion + "\"<p>";
-            //// Information about the path that we access.
-            //strResp += "File to access " + strFilePath + "<p>";
-            //if (Directory.Exists(strFilePath)) // If directory present - iterate over it and 
-            //    strResp += FillDirectoryContext(strFilePath, request);
-            //else // Neither File or directory exists, prints that directory is not found.
-            //    strResp += "Directory: \"" + strFilePath + "\" Does not exists";
-            strResp += "</body></html>";
-            //responder.Respond(strResp);
-            //responder.Respond(UTF8Encoding.UTF8.GetBytes(strResp), "text/html");
+        //private static void Response404(Responder responder)
+        //{
+        //    string strResp = "<!DOCTYPE html PUBLIC \" -//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">";
+        //    strResp += "<html><head></head><body>.Net Micro Framework Example HTTP Server";
+        //    // Print requested verb, URL and version.. Adds information from the request.
+        //    //strResp += "HTTP Method: " + responder.HttpMethod + "<br> Requested URL: \"" + request.RawUrl + "<br> HTTP Version: " + responder.ProtocolVersion + "\"<p>";
+        //    //// Information about the path that we access.
+        //    //strResp += "File to access " + strFilePath + "<p>";
+        //    //if (Directory.Exists(strFilePath)) // If directory present - iterate over it and 
+        //    //    strResp += FillDirectoryContext(strFilePath, request);
+        //    //else // Neither File or directory exists, prints that directory is not found.
+        //    //    strResp += "Directory: \"" + strFilePath + "\" Does not exists";
+        //    strResp += "</body></html>";
+        //    //responder.Respond(strResp);
+        //    //responder.Respond(UTF8Encoding.UTF8.GetBytes(strResp), "text/html");
 
-            strResp = "HTTP/1.1 404 File Not Found\r\n";
-            //responder.ContentType = "text/html";
-            //response.StatusCode = (int)HttpStatusCode.NotFound;
-            byte[] messageBody = Encoding.UTF8.GetBytes(strResp);
-            responder.Respond(messageBody, "text/html");
-            //response.OutputStream.Write(messageBody, 0, messageBody.Length);
-        }
-        private static string GetContentType(string ext)
-        {
-            switch (ext)
-            {
-                case ".htm":
-                case ".html":
-                case ".htmls":
-                    return "text/html";
-                case ".js":
-                    return "text/javascript";
-                //return "application/javascript";
-                case ".jpe":
-                case ".jpg":
-                case ".jpeg":
-                    return "image/jpeg";
-                case ".gif":
-                    return "image/gif";
-                case ".png":
-                    return "image/png";
-                case ".ico":
-                    return "image/x-icon";
-                case ".pdf":
-                    return "application/pdf";
-                case ".svg":
-                    return "image/svg+xml";
-                case ".css":
-                    return "text/css";
-                case ".xml":
-                    return "text/xml";
-                case ".json":
-                    return "application/json";
-                case ".arj":
-                case ".lzh":
-                case ".exe":
-                case ".rar":
-                case ".tar":
-                case ".zip":
-                    return "application/octet-stream";
-                case ".mid":
-                case ".midi":
-                    return "application/x-midi";
-                case ".mp3":
-                    return "audio/mpeg";
-                case ".swf":
-                    return "application/x-shockwave-flash";
-                default:
-                    return "text/plain";
-            }
-        }
-
+        //    strResp = "HTTP/1.1 404 File Not Found\r\n";
+        //    //responder.ContentType = "text/html";
+        //    //response.StatusCode = (int)HttpStatusCode.NotFound;
+        //    byte[] messageBody = Encoding.UTF8.GetBytes(strResp);
+        //    responder.Respond(messageBody, "text/html");
+        //    //response.OutputStream.Write(messageBody, 0, messageBody.Length);
+        //}
+        //private static string GetContentType(string ext)
+        //{
+        //    switch (ext)
+        //    {
+        //        case ".htm":
+        //        case ".html":
+        //        case ".htmls":
+        //            return "text/html";
+        //        case ".js":
+        //            return "text/javascript";
+        //        //return "application/javascript";
+        //        case ".jpe":
+        //        case ".jpg":
+        //        case ".jpeg":
+        //            return "image/jpeg";
+        //        case ".gif":
+        //            return "image/gif";
+        //        case ".png":
+        //            return "image/png";
+        //        case ".ico":
+        //            return "image/x-icon";
+        //        case ".pdf":
+        //            return "application/pdf";
+        //        case ".svg":
+        //            return "image/svg+xml";
+        //        case ".css":
+        //            return "text/css";
+        //        case ".xml":
+        //            return "text/xml";
+        //        case ".json":
+        //            return "application/json";
+        //        case ".arj":
+        //        case ".lzh":
+        //        case ".exe":
+        //        case ".rar":
+        //        case ".tar":
+        //        case ".zip":
+        //            return "application/octet-stream";
+        //        case ".mid":
+        //        case ".midi":
+        //            return "application/x-midi";
+        //        case ".mp3":
+        //            return "audio/mpeg";
+        //        case ".swf":
+        //            return "application/x-shockwave-flash";
+        //        default:
+        //            return "text/plain";
+        //    }
+        //}
         #endregion
 
         #region Event handlers
@@ -236,55 +276,6 @@ namespace DTC.Server
                 //    options = Options.LoadFromSD();
                 //    ApplyOptions();
             }
-        }
-
-
-        // Any URL requests that do not match registered WebEvent paths will end up here.
-        private static void DefaultEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
-        {
-            path = Utils.StringReplace(path, "/", "\\");
-            path = root + "\\" + path;
-
-            if (!File.Exists(path))
-                Response404(responder);
-            else
-            {
-                string ext = Path.GetExtension(path).ToLower();
-                string ct = GetContentType(ext);
-
-                //int bufferSize = 1024 * 1024; // 4
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    long fileLength = fs.Length;
-                    //response.ContentLength64 = fileLength;
-                    //Debug.Print("File: " + path + "; length = " + fileLength);
-
-                    byte[] buf = new byte[fileLength];//bufferSize];
-
-                    fs.Read(buf, 0, (int)fileLength);
-                    responder.Respond(buf, ct);
-
-                    //for (long bytesSent = 0; bytesSent < fileLength; )
-                    //{
-                    //    long bytesToRead = fileLength - bytesSent;
-                    //    bytesToRead = bytesToRead < bufferSize ? bytesToRead : bufferSize;
-
-                    //    byte[] buf = new byte[bytesToRead];
-
-                    //    int bytesRead = fs.Read(buf, 0, (int)bytesToRead);
-                    //    responder.OutputStream.Write(buf, 0, bytesRead);
-                    //    bytesSent += bytesRead;
-
-                    //    Thread.Sleep(0);
-                    //}
-                    fs.Close();
-                }
-            }
-        }
-        // This method will only be called to handle a web request for http://xxx/test/
-        private static void webEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
-        {
-            responder.Respond("Hello World, specific handler");
         }
 
         private static void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
@@ -299,6 +290,100 @@ namespace DTC.Server
                 httpServer.SendFile(root + path, response);
         }
 
+        private static void Session_Connected(TcpSession session)
+        {
+            session.Tag = new NetworkMessageReceiver(msgFormat);
+        }
+        private static bool Session_DataReceived(TcpSession session, byte[] data)
+        {
+            //networkManager.OnBeforeMessage();
+
+            NetworkMessageReceiver nmr = session.Tag as NetworkMessageReceiver;
+            NetworkMessage[] msgs = nmr.Process(data);
+            if (msgs != null)
+                foreach (NetworkMessage msg in msgs)
+                {
+                    NetworkMessage response = ProcessNetworkMessage(msg);
+                    if (response != null)
+                        session.Send(WSDataFrame.WrapString(response.PackToString(nmr.MessageFormat)));
+                }
+
+            //networkManager.OnAfterMessage();
+
+            return false; // don't disconnect
+        }
+        private static void Session_Disconnected(TcpSession session)
+        {
+            // TODO: release locos and accessories
+        }
+
+
+
+
+        // Any URL requests that do not match registered WebEvent paths will end up here.
+        //private static void DefaultEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
+        //{
+        //    path = Utils.StringReplace(path, "/", "\\");
+        //    path = root + "\\" + path;
+
+        //    if (!File.Exists(path))
+        //        Response404(responder);
+        //    else
+        //    {
+        //        string ext = Path.GetExtension(path).ToLower();
+        //        string ct = GetContentType(ext);
+
+        //        //int bufferSize = 1024 * 1024; // 4
+        //        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+        //        {
+        //            long fileLength = fs.Length;
+        //            //response.ContentLength64 = fileLength;
+        //            //Debug.Print("File: " + path + "; length = " + fileLength);
+
+        //            byte[] buf = new byte[fileLength];//bufferSize];
+
+        //            fs.Read(buf, 0, (int)fileLength);
+        //            responder.Respond(buf, ct);
+
+        //            //for (long bytesSent = 0; bytesSent < fileLength; )
+        //            //{
+        //            //    long bytesToRead = fileLength - bytesSent;
+        //            //    bytesToRead = bytesToRead < bufferSize ? bytesToRead : bufferSize;
+
+        //            //    byte[] buf = new byte[bytesToRead];
+
+        //            //    int bytesRead = fs.Read(buf, 0, (int)bytesToRead);
+        //            //    responder.OutputStream.Write(buf, 0, bytesRead);
+        //            //    bytesSent += bytesRead;
+
+        //            //    Thread.Sleep(0);
+        //            //}
+        //            fs.Close();
+        //        }
+        //    }
+        //}
+        // This method will only be called to handle a web request for http://xxx/test/
+        //private static void webEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
+        //{
+        //    responder.Respond("Hello World, specific handler");
+        //}
+        #endregion
+
+        #region Network message processing
+        private static NetworkMessage ProcessNetworkMessage(NetworkMessage msg)
+        {
+            NetworkMessage response = null;
+
+            if (msg != null)
+            {
+
+
+
+
+            }
+
+            return response;
+        }
         #endregion
     }
 }

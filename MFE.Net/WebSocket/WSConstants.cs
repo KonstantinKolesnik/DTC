@@ -1,7 +1,7 @@
 
 namespace MFE.Net.WebSocket
 {
-    class WebSocketConstants
+    class WSConstants
     {
         public const string Host = "Host";
         public const string Connection = "Connection";
