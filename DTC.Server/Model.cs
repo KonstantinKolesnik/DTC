@@ -3,6 +3,7 @@ using MFE.Net.Messaging;
 using MFE.Net.Tcp;
 using MFE.Net.WebSocket;
 using MFE.Storage;
+using Microsoft.SPOT;
 using System.Collections;
 using System.Net;
 using System.Reflection;
@@ -137,7 +138,9 @@ namespace DTC.Server
         private static void StartNetwork()
         {
             //new Thread(delegate { networkManager.Start(); }).Start();
+
             httpServer.Start("http", 81); // for emulator only!!!
+            wsServer.Start(); // for emulator only!!!
         }
         private static void InitDB()
         {
@@ -276,6 +279,31 @@ namespace DTC.Server
                 //    options = Options.LoadFromSD();
                 //    ApplyOptions();
             }
+        }
+
+        private static void Network_Started(object sender, EventArgs e)
+        {
+            ////discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
+            ////tcpServer.Start();
+
+            //httpServer.Start("http", 80);
+            //wsServer.Start();
+
+            //NameService ns = new NameService();
+            //ns.AddName("TYPHOON", NameService.NameType.Unique, NameService.MsSuffix.Default);
+
+            //Beeper.PlaySound(Beeper.SoundID.Click);
+        }
+        private static void Network_Stopped(object sender, EventArgs e)
+        {
+            //Beeper.PlaySound(Beeper.SoundID.PowerOff);
+
+            //httpServer.Stop();
+            //wsServer.Stop();
+
+            //Thread.Sleep(1000);
+
+            //StartNetwork();
         }
 
         private static void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
