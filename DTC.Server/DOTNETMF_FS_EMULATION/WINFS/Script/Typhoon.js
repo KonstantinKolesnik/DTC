@@ -31,14 +31,11 @@ function onDocumentReady() {
     initMainMenu();
 
 
-
     return;
-
 
     createLayout();
     createOperation();
     //createDecoders();
-    createOptions();
 
     //onWindowResize();
 
@@ -109,9 +106,9 @@ function initMainMenu() {
             data: [
                 { Name: "Layout", Url: "Database.png", Action: "model.set('UIState', UIStateType.Layout);" },
                 { Name: "Operation", Url: "Operation.png", Action: "model.set('UIState', UIStateType.Operation);" },
-                { Name: "Decoders", Url: "Decoder.png", Action: "model.set('UIState', UIStateType.Decoders);" },
+                //{ Name: "Decoders", Url: "Decoder.png", Action: "model.set('UIState', UIStateType.Decoders);" },
                 { Name: "Settings", Url: "Settings.png", Action: "model.set('UIState', UIStateType.Settings); model.MessageManager.GetOptions();" },
-                { Name: "Information", Url: "Info.png", Action: "model.set('UIState', UIStateType.Information);" },
+                //{ Name: "Information", Url: "Info.png", Action: "model.set('UIState', UIStateType.Information);" },
                 { Name: "Firmware", Url: "Update.png", Action: "model.set('UIState', UIStateType.Firmware); model.MessageManager.GetVersion();" }
             ]
         },
@@ -431,10 +428,6 @@ function createDecoders() {
     //                        ]
     //            });
     //        }
-}
-function createOptions() {
-    $("#mti").kendoNumericTextBox({ min: 500, max: 3700, step: 100, format: "d4" });
-    $("#pti").kendoNumericTextBox({ min: 500, max: 1000, step: 100, format: "d4" });
 }
 
 var speedGauge;

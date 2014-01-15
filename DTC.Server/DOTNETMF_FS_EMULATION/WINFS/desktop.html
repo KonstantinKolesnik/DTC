@@ -472,9 +472,9 @@
                 </style>-->
             </div>
 
-            <div class="k-block k-shadow" data-bind="visible: IsSettingsVisible">
-                <div class="k-header k-inset" style="height: auto;">
-                    <img class="TitleImage" src="./Resources/Settings.png" alt=""/>
+            <div class="k-block2 k-shadow2" data-bind="visible: IsSettingsVisible">
+                <div class="k-header2 k-inset2" style="height:auto;">
+                    <img class="TitleImage2" src="./Resources/Settings.png" alt=""/>
                     <span class=" title1">Settings</span><!--TitleSpan-->
 
                     <button class="k-button smallTlbBtn" onclick="showMain();"><span class="k-icon k-i-close"></span></button>
@@ -493,11 +493,11 @@
                         
                         <tr>
                             <td><label>Main track I max, mA:</label></td>
-                            <td style="width:50%; text-align:right;"><input id="mti" type="number" data-bind="value: Options.MainBridgeCurrentThreshould"/></td>
+                            <td style="width:50%; text-align:right;"><input id="mti" type="number" data-role="numerictextbox" data-format="d4" data-min="500" data-max="3700" data-step="100" data-bind="value: Options.MainBridgeCurrentThreshould"/></td>
                         </tr>
                         <tr>
                             <td><label>Program track I max, mA:</label></td>
-                            <td style="width:50%; text-align:right;"><input id="pti" type="number" data-bind="value: Options.ProgBridgeCurrentThreshould"/></td>
+                            <td style="width:50%; text-align:right;"><input id="pti" type="number" data-role="numerictextbox" data-format="d4" data-min="500" data-max="1000" data-step="100" data-bind="value: Options.ProgBridgeCurrentThreshould"/></td>
                         </tr>
                         <tr>
                             <td><label>Broadcast boosters current:</label></td>

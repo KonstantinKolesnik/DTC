@@ -404,14 +404,30 @@ namespace DTC.Server
 
             if (msg != null)
             {
+                switch (msg.ID)
+                {
+
+                    #region Version
+                    case "Version": response = GetVersionMessage(); break;
+                    #endregion
 
 
 
-
+                    default: break;
+                }
             }
 
             return response;
         }
+
+
+        private static NetworkMessage GetVersionMessage()
+        {
+            NetworkMessage msg = new NetworkMessage("Version");
+            msg["Version"] = Version;
+            return msg;
+        }
+
         #endregion
     }
 }
