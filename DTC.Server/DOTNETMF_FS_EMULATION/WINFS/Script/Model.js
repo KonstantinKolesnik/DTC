@@ -9,7 +9,6 @@ function Model() {
 
     // Properties:
     this.Connected = false;
-    this.Disconnected = function () { return !this.get("Connected"); }
     this.StationPower = false;
     this.MainBoosterIsActive = false;
     this.MainBoosterIsOverloaded = false;
@@ -29,8 +28,6 @@ function Model() {
     this.OperationList = new kendo.data.ObservableArray([]);
 
     this.MessageManager;
-
-    this.UIState = UIStateType.Main;
 
     this.LEDConnectionImage = function () {
         return "Resources/Led" + (this.get("Connected") ? "Green" : "Grey") + "_16.ico";
@@ -55,6 +52,7 @@ function Model() {
         return "Resources/Power" + (this.get("StationPower") ? "On" : "Off") + ".png";
     }
 
+    this.UIState = UIStateType.Main;
     this.IsMainVisible = function () { return this.get("UIState") == UIStateType.Main; }
     this.IsLayoutVisible = function () { return this.get("UIState") == UIStateType.Layout; }
     this.IsOperationVisible = function () { return this.get("UIState") == UIStateType.Operation; }
@@ -65,7 +63,7 @@ function Model() {
 
     // Public functions:
     this.Init = function () {
-        //createWebSocket();
+        createWebSocket();
 
         this.MessageManager = new MessageManager(socket);
         this.MessageManager.MessageReceived = onServerMessage;
@@ -96,10 +94,10 @@ function Model() {
         }
         else
             showDialog("No WebSocket support! Please try another browser.", "Warning");
-        //alert("No WebSocket support! Please try another browser.");
+
         function onSocketOpen() {
             model.set("Connected", true);
-            model.MessageManager.GetPower();
+            //model.MessageManager.GetPower();
         }
         function onSocketClose() {
             model.set("Connected", false);
@@ -107,7 +105,7 @@ function Model() {
             createWebSocket();
         }
         function onSocketError(e) {
-            //showDialog("WebSocket error: " + e);
+            showDialog("WebSocket error: " + e);
         }
     }
     function closeWebSocket() {

@@ -27,16 +27,20 @@ function onDocumentReady() {
     model = kendo.observable(new Model());
     model.Init();
     kendo.bind($("body"), model);
+
+    initMainMenu();
+
+
+
     return;
 
-    createMainMenu();
+
     createLayout();
     createOperation();
     //createDecoders();
     createOptions();
 
-
-//    onWindowResize();
+    //onWindowResize();
 
     // for test!!!
     var loco1 = new Locomotive(1, "MKV", "aaaaaaa", new LocomotiveAddress(7, false), Protocol.DCC28);
@@ -97,76 +101,78 @@ function onDocumentReady() {
         //var lo = $('#lvOperation').data('kendoListView').dataSource._data[idx];
         //kendo.bind($(b).getKendoSlider(), lo);
     });
-
-    
 }
 //----------------------------------------------------------------------------------------------------------------------
-function createMainMenu() {
-    var mainMenuItems = [
-        { Name: "Layout", Url: "Database.png", Action: "model.set('UIState', UIStateType.Layout);" },
-        { Name: "Operation", Url: "Operation.png", Action: "model.set('UIState', UIStateType.Operation);" },
-        { Name: "Decoders", Url: "Decoder.png", Action: "model.set('UIState', UIStateType.Decoders);" },
-        { Name: "Settings", Url: "Settings.png", Action: "model.set('UIState', UIStateType.Settings); model.MessageManager.GetOptions();" },
-        { Name: "Information", Url: "Info.png", Action: "model.set('UIState', UIStateType.Information);" },
-        { Name: "Firmware", Url: "Update.png", Action: "model.set('UIState', UIStateType.Firmware); model.MessageManager.GetVersion();" }
-        ];
-
-    $("#lvMainMenu").kendoListView({ template: kendo.template($("#tmpltMainMenuItem").html()), dataSource: { data: mainMenuItems } });
+function initMainMenu() {
+    $("#lvMainMenu").kendoListView({
+        dataSource: {
+            data: [
+                { Name: "Layout", Url: "Database.png", Action: "model.set('UIState', UIStateType.Layout);" },
+                { Name: "Operation", Url: "Operation.png", Action: "model.set('UIState', UIStateType.Operation);" },
+                { Name: "Decoders", Url: "Decoder.png", Action: "model.set('UIState', UIStateType.Decoders);" },
+                { Name: "Settings", Url: "Settings.png", Action: "model.set('UIState', UIStateType.Settings); model.MessageManager.GetOptions();" },
+                { Name: "Information", Url: "Info.png", Action: "model.set('UIState', UIStateType.Information);" },
+                { Name: "Firmware", Url: "Update.png", Action: "model.set('UIState', UIStateType.Firmware); model.MessageManager.GetVersion();" }
+            ]
+        },
+        template: kendo.template($("#tmpltMainMenuItem").html())
+    });
 }
-//    function getLayouts() {
-//        var crudServiceBaseUrl = "http://demos.kendoui.com/service",
-//        dataSource = new kendo.data.DataSource({
-//            transport: {
-//                read: {
-//                    url: crudServiceBaseUrl + "/Products",
-//                    dataType: "jsonp"
-//                },
-//                update: {
-//                    url: crudServiceBaseUrl + "/Products/Update",
-//                    dataType: "jsonp"
-//                },
-//                destroy: {
-//                    url: crudServiceBaseUrl + "/Products/Destroy",
-//                    dataType: "jsonp"
-//                },
-//                create: {
-//                    url: crudServiceBaseUrl + "/Products/Create",
-//                    dataType: "jsonp"
-//                },
-//                parameterMap: function (options, operation) {
-//                    if (operation !== "read" && options.models) {
-//                        return { models: kendo.stringify(options.models) };
-//                    }
-//                }
+
+function getLayouts() {
+//    var crudServiceBaseUrl = "http://demos.kendoui.com/service",
+//    dataSource = new kendo.data.DataSource({
+//        transport: {
+//            read: {
+//                url: crudServiceBaseUrl + "/Products",
+//                dataType: "jsonp"
 //            },
-//            batch: true,
-//            pageSize: 4, //4
-//            schema: {
-//                model: {
-//                    id: "ProductID",
-//                    fields: {
-//                        ProductID: { editable: false, nullable: true },
-//                        ProductName: "ProductName",
-//                        UnitPrice: { type: "number" },
-//                        Discontinued: { type: "boolean" },
-//                        UnitsInStock: { type: "number" }
-//                    }
+//            update: {
+//                url: crudServiceBaseUrl + "/Products/Update",
+//                dataType: "jsonp"
+//            },
+//            destroy: {
+//                url: crudServiceBaseUrl + "/Products/Destroy",
+//                dataType: "jsonp"
+//            },
+//            create: {
+//                url: crudServiceBaseUrl + "/Products/Create",
+//                dataType: "jsonp"
+//            },
+//            parameterMap: function (options, operation) {
+//                if (operation !== "read" && options.models) {
+//                    return { models: kendo.stringify(options.models) };
 //                }
 //            }
-//        });
+//        },
+//        batch: true,
+//        pageSize: 4, //4
+//        schema: {
+//            model: {
+//                id: "ProductID",
+//                fields: {
+//                    ProductID: { editable: false, nullable: true },
+//                    ProductName: "ProductName",
+//                    UnitPrice: { type: "number" },
+//                    Discontinued: { type: "boolean" },
+//                    UnitsInStock: { type: "number" }
+//                }
+//            }
+//        }
+//    });
 
 
-//        $("#lvLayoutsPager").kendoPager({ dataSource: dataSource });
-//        var listView = $("#lvLayouts").kendoListView({
-//            dataSource: dataSource,
-//            template: kendo.template($("#template").html()),
-//            editTemplate: kendo.template($("#editTemplate").html())
-//        }).data("kendoListView");
-//        $(".k-add-button").click(function (e) {
-//            listView.add();
-//            e.preventDefault();
-//        });
-//    }
+//    $("#lvLayoutsPager").kendoPager({ dataSource: dataSource });
+//    var listView = $("#lvLayouts").kendoListView({
+//        dataSource: dataSource,
+//        template: kendo.template($("#template").html()),
+//        editTemplate: kendo.template($("#editTemplate").html())
+//    }).data("kendoListView");
+//    $(".k-add-button").click(function (e) {
+//        listView.add();
+//        e.preventDefault();
+//    });
+}
 
 function createLayout() {
     var baseUrl = "http://" + document.location.host;//.origin;
