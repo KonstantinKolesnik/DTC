@@ -1,7 +1,7 @@
 
-function LocomotiveAddress(address, long) {
+function LocomotiveAddress(address, islong) {
     this.Address = address;
-    this.Long = long;
+    this.Long = islong;
 }
 //----------------------------------------------------------------------------------------------------------------------
 function MessageManager(socket) {
