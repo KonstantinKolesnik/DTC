@@ -86,7 +86,7 @@ namespace MFE.Net.WebSocket
                                 {
                                     int i = item.IndexOf("=");
                                     string c_name = item.Substring(0, i);
-                                    string c_value = item.Substring(idx + 1);
+                                    string c_value = item.Substring(i + 1);
                                     handshake.Cookies.Add(new HttpCookie(c_name.TrimStart(), c_value));
                                 }
                                 break;
