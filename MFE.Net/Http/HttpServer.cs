@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -17,8 +18,6 @@ namespace MFE.Net.Http
         #region Fields
         private static Encoding encoder = Encoding.UTF8;
         private static char[] fwdSlashDelim = { '\\' };
-
-        //private static Queue m_responseQueue = new Queue();
         private HttpListener listener;
         private bool isStopped = true;
 
@@ -334,67 +333,50 @@ namespace MFE.Net.Http
             {
                 while (!isStopped)
                 {
+                    HttpListenerContext context = null;
+
                     try
                     {
                         if (!listener.IsListening)
                             listener.Start();
 
-                        //lock (m_responseQueue)
-                        //{
-                        //    m_responseQueue.Enqueue(listener.GetContext());
-                        //}
-                        //new Thread(new ThreadStart(HandleRequest)) { Priority = ThreadPriority.Normal }.Start();
+                        context = listener.GetContext();
+                        switch (context.Request.HttpMethod.ToUpper())
+                        {
+                            case "GET": ProcessClientGetRequest(context); break;
+                            case "POST": ProcessClientPostRequest(context); break;
+                        }
 
-                        HandleRequest(listener.GetContext()); // to do it in the same thread is much faster!!!
+                        if (context.Response != null)
+                            context.Response.Close();
                     }
-                    catch (InvalidOperationException)
+                    //catch (InvalidOperationException ex)
+                    //{
+                    //    listener.Stop();
+                    //    Thread.Sleep(1000);
+                    //}
+                    //catch (ObjectDisposedException ex)
+                    //{
+                    //    listener.Start();
+                    //}
+                    //catch (SocketException ex)
+                    //{
+                    //    if (ex.ErrorCode == 10053)
+                    //        listener.Stop();
+                    //}
+                    catch (Exception ex)
                     {
-                        listener.Stop();
-                        Thread.Sleep(1000);
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        listener.Start();
-                    }
-                    catch
-                    {
-                        Thread.Sleep(1000);
+                        //Thread.Sleep(1000);
+                        if (context != null)
+                            context.Close();
                     }
                 }
 
-
-                //while (!isStopped)
-                //{
-                //    HttpListenerContext context = null;
-                //    response = null;
-
-                //    try
-                //    {
-                //        context = listener.GetContext();
-                //        request = context.Request;
-                //        response = context.Response;
-
-                //        switch (request.HttpMethod.ToUpper())
-                //        {
-                //            case "GET": ProcessClientGetRequest(); break;
-                //            case "POST": ProcessClientPostRequest(context); break;
-                //        }
-
-                //        if (response != null)
-                //            response.Close();
-
-                //        Thread.Sleep(100);
-                //    }
-                //    catch (Exception)
-                //    {
-                //        if (context != null)
-                //            context.Close();
-                //    }
-                //}
-
+                // stopped
                 listener.Close();
                 listener = null;
-            }) { Priority = ThreadPriority.Normal }.Start();
+            }
+            ) { Priority = ThreadPriority.Normal }.Start();
         }
         public void Stop()
         {
@@ -440,51 +422,6 @@ namespace MFE.Net.Http
         #endregion
 
         #region Private methods
-        private void HandleRequest(HttpListenerContext context)
-        {
-            try
-            {
-                switch (context.Request.HttpMethod.ToUpper())
-                {
-                    case "GET": ProcessClientGetRequest(context); break;
-                    case "POST": ProcessClientPostRequest(context); break;
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                if (context != null)
-                    context.Close();
-            }
-
-
-
-            //HttpListenerContext context = null;
-            //try
-            //{
-            //    lock (m_responseQueue)
-            //    {
-            //        context = (HttpListenerContext)m_responseQueue.Dequeue();
-            //    }
-
-            //    switch (context.Request.HttpMethod.ToUpper())
-            //    {
-            //        case "GET": ProcessClientGetRequest(context); break;
-            //        case "POST": ProcessClientPostRequest(context); break;
-            //    }
-            //}
-            //catch
-            //{
-            //}
-            //finally
-            //{
-            //    if (context != null)
-            //        context.Close();
-            //}
-        }
-
         private void ProcessClientGetRequest(HttpListenerContext context)
         {
             HttpListenerRequest request = context.Request;
@@ -515,12 +452,6 @@ namespace MFE.Net.Http
 
             if (OnGetRequest != null)
                 OnGetRequest(path, parameters, response);
-
-
-
-
-
-
 
             //if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
             //{
@@ -690,8 +621,8 @@ namespace MFE.Net.Http
             string strResp = "HTTP/1.1 404 File Not Found\r\n";
             response.ContentType = "text/html";
             response.StatusCode = (int)HttpStatusCode.NotFound;
-            byte[] messageBody = encoder.GetBytes(strResp);
-            response.OutputStream.Write(messageBody, 0, messageBody.Length);
+            byte[] buffer = encoder.GetBytes(strResp);
+            response.OutputStream.Write(buffer, 0, buffer.Length);
         }
 
         private static string FillDirectoryContext(string strFilePath, HttpListenerRequest request)

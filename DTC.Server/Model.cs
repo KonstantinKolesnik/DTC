@@ -116,11 +116,6 @@ namespace DTC.Server
             wsServer.SessionDataReceived += Session_DataReceived;
             wsServer.SessionDisconnected += Session_Disconnected;
 
-
-            //WebServer.StartLocalServer(""/*eth.NetworkInterface.IPAddress*/, 80);
-            //WebServer.DefaultEvent.WebEventReceived += DefaultEvent_WebEventReceived;
-            //WebServer.SetupWebEvent("test/").WebEventReceived += webEvent_WebEventReceived;
-
             httpServer = new HttpServer();
             httpServer.OnGetRequest += httpServer_OnGetRequest;
 
@@ -140,7 +135,7 @@ namespace DTC.Server
             //new Thread(delegate { networkManager.Start(); }).Start();
 
             httpServer.Start("http", 81); // for emulator only!!!
-            wsServer.Start(); // for emulator only!!!
+            //wsServer.Start(); // for emulator only!!!
         }
         private static void InitDB()
         {
@@ -344,57 +339,6 @@ namespace DTC.Server
         {
             // TODO: release locos and accessories
         }
-
-
-
-
-        // Any URL requests that do not match registered WebEvent paths will end up here.
-        //private static void DefaultEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
-        //{
-        //    path = Utils.StringReplace(path, "/", "\\");
-        //    path = root + "\\" + path;
-
-        //    if (!File.Exists(path))
-        //        Response404(responder);
-        //    else
-        //    {
-        //        string ext = Path.GetExtension(path).ToLower();
-        //        string ct = GetContentType(ext);
-
-        //        //int bufferSize = 1024 * 1024; // 4
-        //        using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-        //        {
-        //            long fileLength = fs.Length;
-        //            //response.ContentLength64 = fileLength;
-        //            //Debug.Print("File: " + path + "; length = " + fileLength);
-
-        //            byte[] buf = new byte[fileLength];//bufferSize];
-
-        //            fs.Read(buf, 0, (int)fileLength);
-        //            responder.Respond(buf, ct);
-
-        //            //for (long bytesSent = 0; bytesSent < fileLength; )
-        //            //{
-        //            //    long bytesToRead = fileLength - bytesSent;
-        //            //    bytesToRead = bytesToRead < bufferSize ? bytesToRead : bufferSize;
-
-        //            //    byte[] buf = new byte[bytesToRead];
-
-        //            //    int bytesRead = fs.Read(buf, 0, (int)bytesToRead);
-        //            //    responder.OutputStream.Write(buf, 0, bytesRead);
-        //            //    bytesSent += bytesRead;
-
-        //            //    Thread.Sleep(0);
-        //            //}
-        //            fs.Close();
-        //        }
-        //    }
-        //}
-        // This method will only be called to handle a web request for http://xxx/test/
-        //private static void webEvent_WebEventReceived(string path, WebServer.HttpMethod method, Responder responder)
-        //{
-        //    responder.Respond("Hello World, specific handler");
-        //}
         #endregion
 
         #region Network message processing

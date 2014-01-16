@@ -63,7 +63,7 @@ function Model() {
 
     // Public functions:
     this.Init = function () {
-        createWebSocket();
+        //createWebSocket();
 
         this.MessageManager = new MessageManager(socket);
         this.MessageManager.MessageReceived = onServerMessage;

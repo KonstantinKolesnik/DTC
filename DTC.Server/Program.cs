@@ -34,6 +34,10 @@ namespace DTC.Server
 
 
             Model model = new Model();
+            //model.UART = ...
+
+
+            //model.Start();
         }
     }
 }
