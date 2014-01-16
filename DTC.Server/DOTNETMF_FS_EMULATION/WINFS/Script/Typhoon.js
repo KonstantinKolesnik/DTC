@@ -510,13 +510,9 @@ function rr() {
 function lightOn() { model.MessageManager.SetLocoFunctionGroup1(address, true, false, false, false, false); }
 function lightOff() { model.MessageManager.SetLocoFunctionGroup1(address, false, false, false, false, false); }
 
-
-
 function aaa(item) {
     var a = 0;
     var b = a;
-
-
 
     //var a = $(item).kendoSlider().data('kendoSlider');
     kendo.init($(item));
@@ -525,5 +521,4 @@ function aaa(item) {
     //kendo.init($(b));
     
     //($(b)).kendoSlider().data("kendoSlider").value(20);
-
 }

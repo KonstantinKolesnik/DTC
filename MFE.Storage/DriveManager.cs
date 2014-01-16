@@ -1,6 +1,7 @@
 using GHI.Premium.IO;
 using GHI.Premium.System;
 using GHI.Premium.USBHost;
+using MFE.Core;
 using Microsoft.SPOT;
 using Microsoft.SPOT.IO;
 using System;
@@ -89,7 +90,16 @@ namespace MFE.Storage
                 RemovableMedia.Eject += RemovableMedia_Ejected;
                 new Thread(SDWatcher) { Priority = ThreadPriority.BelowNormal }.Start();
 
-                MountFlash();
+                try
+                {
+                    flash = new PersistentStorage("NAND");
+                    flash.MountFileSystem();
+                    //string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
+                }
+                catch (Exception e)
+                {
+                    Debug.Print(e.Message);
+                }
             }
         }
         #endregion
@@ -125,19 +135,6 @@ namespace MFE.Storage
         #endregion
 
         #region Private Methods
-        private static void MountFlash()
-        {
-            try
-            {
-                flash = new PersistentStorage("NAND");
-                flash.MountFileSystem();
-                //string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
-            }
-            catch (Exception e)
-            {
-                Debug.Print(e.Message);
-            }
-        }
         private static void SDWatcher()
         {
             const int POLL_TIME = 500; // check every 500 millisecond

@@ -1,3 +1,4 @@
+using MFE.Core;
 using MFE.Net.Http;
 using System.Collections;
 using System.Text;
@@ -62,7 +63,7 @@ namespace MFE.Net.WebSocket
             string[] lines = hs.Split('\r', '\n');
             foreach (string line in lines)
             {
-                if (!Utils.IsStringNullOrEmpty(line))
+                if (!Utils.StringIsNullOrEmpty(line))
                 {
                     int idx = line.IndexOf(": ");
                     if (idx == -1) // first line

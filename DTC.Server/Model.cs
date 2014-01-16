@@ -1,3 +1,4 @@
+using MFE.Data;
 using MFE.Net.Http;
 using MFE.Net.Messaging;
 using MFE.Net.Tcp;
@@ -5,6 +6,7 @@ using MFE.Net.WebSocket;
 using MFE.Storage;
 using Microsoft.SPOT;
 using System.Collections;
+using System.IO;
 using System.Net;
 using System.Reflection;
 
@@ -13,13 +15,14 @@ namespace DTC.Server
     class Model
     {
         #region Fields
-        private static Options options;
         private const uint optionsID = 0;
+        private static Options options;
 
         //private static string root = @"\SD"; // for device
         private static string root = @"\WINFS"; // for emulator
 
-        //private static DBManager dbManager;
+        private static string dbFileName = "Layout.dat";
+        private static DBManager dbManager = new DBManager();
 
         //private static Booster mainBooster;
         //private static Booster progBooster;
@@ -119,8 +122,6 @@ namespace DTC.Server
             httpServer = new HttpServer();
             httpServer.OnGetRequest += httpServer_OnGetRequest;
 
-
-
             //if (options.UseWiFi)
             //    networkManager = new WiFiManager(true, HardwareConfiguration.PinNetworkLED, options.WiFiSSID, options.WiFiPassword);
             //else
@@ -134,14 +135,32 @@ namespace DTC.Server
         {
             //new Thread(delegate { networkManager.Start(); }).Start();
 
-            httpServer.Start("http", 81); // for emulator only!!!
+            //httpServer.Start("http", 81; // for emulator only!!!
             //wsServer.Start(); // for emulator only!!!
         }
         private static void InitDB()
         {
-            //dbManager = new DBManager();
-            ////root = @"\NAND";
-            //dbManager.Open(root + "\\Layout.dat");
+            dbManager.OpenInMemory();
+
+
+
+
+
+
+
+            return;
+
+
+            // for test!!!
+            bool dbExists = File.Exists(root + "\\" +dbFileName);
+            //if (dbExists)
+            //    File.Delete(dbFileName);
+
+            dbManager.OpenOnSD(dbFileName);
+            if (!dbExists)
+            {
+                // add tables;
+            }
 
             ////dbManager.Add(new Consist() { Name = "Consist 1", });
             ////dbManager.Add(new Consist() { Name = "Consist 2", });
@@ -172,6 +191,16 @@ namespace DTC.Server
             ////Consist consist = (Consist)consists[1];
             ////Consist consist2 = dbManager.GetConsist(consist.ID);
             ////Debug.Print(consist2.Name);
+
+            //dbManager.Close();
+        }
+        private void CreateDB()
+        {
+            //db.ExecuteNonQuery("CREATE Table Locomotives(ID TEXT, Name TEXT, Description TEXT, Protocol INTEGER, ConsistID TEXT, ConsistForward INTEGER)");
+            //db.ExecuteNonQuery("CREATE Table Consists(ID TEXT, Name TEXT, Description TEXT)");
+
+
+
         }
 
         private static void ApplyOptions()
@@ -191,79 +220,6 @@ namespace DTC.Server
             //    timerBoostersCurrent = null;
             //}
         }
-
-        //private static void Response404(Responder responder)
-        //{
-        //    string strResp = "<!DOCTYPE html PUBLIC \" -//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">";
-        //    strResp += "<html><head></head><body>.Net Micro Framework Example HTTP Server";
-        //    // Print requested verb, URL and version.. Adds information from the request.
-        //    //strResp += "HTTP Method: " + responder.HttpMethod + "<br> Requested URL: \"" + request.RawUrl + "<br> HTTP Version: " + responder.ProtocolVersion + "\"<p>";
-        //    //// Information about the path that we access.
-        //    //strResp += "File to access " + strFilePath + "<p>";
-        //    //if (Directory.Exists(strFilePath)) // If directory present - iterate over it and 
-        //    //    strResp += FillDirectoryContext(strFilePath, request);
-        //    //else // Neither File or directory exists, prints that directory is not found.
-        //    //    strResp += "Directory: \"" + strFilePath + "\" Does not exists";
-        //    strResp += "</body></html>";
-        //    //responder.Respond(strResp);
-        //    //responder.Respond(UTF8Encoding.UTF8.GetBytes(strResp), "text/html");
-
-        //    strResp = "HTTP/1.1 404 File Not Found\r\n";
-        //    //responder.ContentType = "text/html";
-        //    //response.StatusCode = (int)HttpStatusCode.NotFound;
-        //    byte[] messageBody = Encoding.UTF8.GetBytes(strResp);
-        //    responder.Respond(messageBody, "text/html");
-        //    //response.OutputStream.Write(messageBody, 0, messageBody.Length);
-        //}
-        //private static string GetContentType(string ext)
-        //{
-        //    switch (ext)
-        //    {
-        //        case ".htm":
-        //        case ".html":
-        //        case ".htmls":
-        //            return "text/html";
-        //        case ".js":
-        //            return "text/javascript";
-        //        //return "application/javascript";
-        //        case ".jpe":
-        //        case ".jpg":
-        //        case ".jpeg":
-        //            return "image/jpeg";
-        //        case ".gif":
-        //            return "image/gif";
-        //        case ".png":
-        //            return "image/png";
-        //        case ".ico":
-        //            return "image/x-icon";
-        //        case ".pdf":
-        //            return "application/pdf";
-        //        case ".svg":
-        //            return "image/svg+xml";
-        //        case ".css":
-        //            return "text/css";
-        //        case ".xml":
-        //            return "text/xml";
-        //        case ".json":
-        //            return "application/json";
-        //        case ".arj":
-        //        case ".lzh":
-        //        case ".exe":
-        //        case ".rar":
-        //        case ".tar":
-        //        case ".zip":
-        //            return "application/octet-stream";
-        //        case ".mid":
-        //        case ".midi":
-        //            return "application/x-midi";
-        //        case ".mp3":
-        //            return "audio/mpeg";
-        //        case ".swf":
-        //            return "application/x-shockwave-flash";
-        //        default:
-        //            return "text/plain";
-        //    }
-        //}
         #endregion
 
         #region Event handlers

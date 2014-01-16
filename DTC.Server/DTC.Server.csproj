@@ -89,6 +89,14 @@
     <None Include="Resources\small.tinyfnt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MFE.Core\MFE.Core.csproj">
+      <Project>{03D2EE7A-7DE1-4329-804E-6823D20A53B2}</Project>
+      <Name>MFE.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MFE.Data\MFE.Data.csproj">
+      <Project>{7D33EA61-AAD1-4499-AD04-3540AF13B614}</Project>
+      <Name>MFE.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MFE.Net.Messaging\MFE.Net.Messaging.csproj">
       <Project>{632B23F9-A020-4C66-93A3-DE9AF4529CB9}</Project>
       <Name>MFE.Net.Messaging</Name>
@@ -100,10 +108,6 @@
     <ProjectReference Include="..\MFE.Storage\MFE.Storage.csproj">
       <Project>{B3AF4DFB-585D-477A-981A-0F5E69EC7A89}</Project>
       <Name>MFE.Storage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MFE\MFE.csproj">
-      <Project>{03D2EE7A-7DE1-4329-804E-6823D20A53B2}</Project>
-      <Name>MFE %28MFE\MFE%29</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -46,9 +46,9 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MFE\MFE.csproj">
+    <ProjectReference Include="..\MFE.Core\MFE.Core.csproj">
       <Project>{03D2EE7A-7DE1-4329-804E-6823D20A53B2}</Project>
-      <Name>MFE %28MFE\MFE%29</Name>
+      <Name>MFE.Core</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

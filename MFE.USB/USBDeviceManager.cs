@@ -1,5 +1,6 @@
 using GHI.Premium.System;
 using GHI.Premium.USBHost;
+using MFE.Core;
 using System;
 
 namespace MFE.USB

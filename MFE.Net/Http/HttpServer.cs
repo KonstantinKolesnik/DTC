@@ -1,10 +1,10 @@
-﻿using Microsoft.SPOT;
+﻿using MFE.Core;
+using Microsoft.SPOT;
 using Microsoft.SPOT.IO;
 using System;
 using System.Collections;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -438,7 +438,7 @@ namespace MFE.Net.Http
                 string[] pairs = query.Substring(idx + 1).Split(new Char[] { '&' });
                 foreach (string pair in pairs)
                 {
-                    if (!Utils.IsStringNullOrEmpty(pair))
+                    if (!Utils.StringIsNullOrEmpty(pair))
                     {
                         string[] s = pair.Split(new Char[] { '=' });
                         parameters.Add(s[0], s[1]);

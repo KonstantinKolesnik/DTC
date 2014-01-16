@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.SPOT;
-using Microsoft.SPOT.Hardware;
+﻿using Microsoft.SPOT.Hardware;
+using System;
 using System.Text;
 
-namespace MFE
+namespace MFE.Core
 {
     public static class Utils
     {
@@ -12,8 +11,8 @@ namespace MFE
             get { return SystemInfo.SystemID.SKU == 3; }
         }
 
-
-        public static bool IsStringNullOrEmpty(string str)
+        #region String utils
+        public static bool StringIsNullOrEmpty(string str)
         {
             return str == null || str == "" || str == String.Empty || str.Length == 0;
         }
@@ -46,7 +45,13 @@ namespace MFE
             }
             return Source;
         }
+        public static string StringQuotate(string s)
+        {
+            return "'" + s + "'";
+        }
+        #endregion
 
+        #region Base64 string utils
         public static string ToBase64String(byte[] value)
         {
             return ConvertBase64My.ToBase64String(value);
@@ -72,16 +77,11 @@ namespace MFE
         {
             return new Guid(ConvertBase64My.FromBase64String(s));
         }
-
-
-
-
-
+        #endregion
     }
 
-    public static class ConvertBase64My
+    static class ConvertBase64My
     {
-
         /// <summary>
         /// Conversion array from 6 bit of value into base64 encoded character.
         /// </summary>
@@ -134,10 +134,9 @@ namespace MFE
         private const int CCH_B64_IN_QUARTET = 4;
         private const int CB_B64_OUT_TRIO = 3;
 
-        static private int GetBase64EncodedLength(int binaryLen)
+        private static int GetBase64EncodedLength(int binaryLen)
         {
             return (((binaryLen / 3) + (((binaryLen % 3) != 0) ? 1 : 0)) * 4);
-
         }
 
         /// <summary>
@@ -148,9 +147,7 @@ namespace MFE
         public static string ToBase64String(byte[] inArray)
         {
             if (inArray == null)
-            {
                 throw new ArgumentNullException();
-            }
 
             // Create array of characters with appropriate length.
             int inArrayLen = inArray.Length;
@@ -160,8 +157,7 @@ namespace MFE
             /* encoding starts from end of string */
 
             /*
-            ** Convert the input buffer bytes through the encoding table and
-            ** out into the output buffer.
+            ** Convert the input buffer bytes through the encoding table and out into the output buffer.
             */
             int iInputEnd = (outArrayLen / CCH_B64_IN_QUARTET - 1) * CB_B64_OUT_TRIO;
             int iInput = 0, iOutput = 0;
@@ -192,15 +188,11 @@ namespace MFE
 
             switch (inArrayLen % CB_B64_OUT_TRIO)
             {
-                /*
-                ** One byte out of three, add padding and fall through
-                */
+                // One byte out of three, add padding and fall through
                 case 1:
                     outArray[outArrayLen - 2] = '=';
                     goto case 2;
-                /*
-                ** Two bytes out of three, add padding.
-                */
+                // Two bytes out of three, add padding.
                 case 2:
                     outArray[outArrayLen - 1] = '=';
                     break;
@@ -223,18 +215,13 @@ namespace MFE
         /// </remarks>
         public static byte[] FromBase64String(string inString)
         {
-
             if (inString == null)
-            {
                 throw new ArgumentNullException();
-            }
 
             // Checks that length of string is multiple of 4
             int inLength = inString.Length;
             if (inLength % CCH_B64_IN_QUARTET != 0)
-            {
                 throw new ArgumentException("Encoded string length should be multiple of 4");
-            }
 
             // Maximum buffer size needed.
             int outCurPos = (((inLength + (CCH_B64_IN_QUARTET - 1)) / CCH_B64_IN_QUARTET) * CB_B64_OUT_TRIO);
@@ -243,9 +230,7 @@ namespace MFE
                 --outCurPos;
                 // If one more '=' - two bytes were actually padded.
                 if (inString[inLength - 2] == '=')
-                {
                     --outCurPos;
-                }
             }
 
             // Output array.
@@ -253,9 +238,7 @@ namespace MFE
             // Array of 4 bytes - temporary.
             byte[] rgbOutput = new byte[CCH_B64_IN_QUARTET];
             // Loops over each 4 bytes quartet.
-            for (int inCurPos = inLength;
-                 inCurPos > 0;
-                 inCurPos -= CCH_B64_IN_QUARTET)
+            for (int inCurPos = inLength; inCurPos > 0; inCurPos -= CCH_B64_IN_QUARTET)
             {
                 int ibDest = 0;
                 for (; ibDest < CB_B64_OUT_TRIO + 1; ibDest++)
@@ -265,9 +248,7 @@ namespace MFE
                     if (inString[ichGet] == '=')
                     {
                         if (ibDest < 2 || inCurPos != inLength)
-                        {
                             throw new ArgumentException("Invalid base64 encoded string");
-                        }
                         break;
                     }
 
@@ -281,11 +262,9 @@ namespace MFE
                     default:
                         retArray[--outCurPos] = (byte)(((rgbOutput[2] & 0x03) << 6) | rgbOutput[3]);
                         goto case 3;
-
                     case 3:
                         retArray[--outCurPos] = (byte)(((rgbOutput[1] & 0x0F) << 4) | (((rgbOutput[2]) & 0x3C) >> 2));
                         goto case 2;
-
                     case 2:
                         retArray[--outCurPos] = (byte)(((rgbOutput[0]) << 2) | (((rgbOutput[1]) & 0x30) >> 4));
                         break;
@@ -295,5 +274,4 @@ namespace MFE
             return retArray;
         }
     }
-
 }

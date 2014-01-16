@@ -1,3 +1,4 @@
+using MFE.Core;
 using System;
 using System.Collections;
 using System.Ext.Xml;
@@ -42,7 +43,7 @@ namespace MFE.Net.Messaging
         #region Constructor
         public NetworkMessage(string id)
         {
-            if (Utils.IsStringNullOrEmpty(id))
+            if (Utils.StringIsNullOrEmpty(id))
                 throw new ArgumentNullException("NetworkMessage ID not specified");
 
             this.id = id;
@@ -161,7 +162,7 @@ namespace MFE.Net.Messaging
                 string[] pairs = txt.Split(new Char[] { ';' });
                 foreach (string pair in pairs)
                 {
-                    if (!Utils.IsStringNullOrEmpty(pair))
+                    if (!Utils.StringIsNullOrEmpty(pair))
                     {
                         string[] s = pair.Split(new Char[] { '=' });
                         parameters.Add(s[0], s[1]);
