@@ -7,6 +7,7 @@ using MFE.Storage;
 using Microsoft.SPOT;
 using System.Collections;
 using System.IO;
+using System.IO.Ports;
 using System.Net;
 using System.Reflection;
 
@@ -32,10 +33,12 @@ namespace DTC.Server
 
         private static NetworkMessageFormat msgFormat = NetworkMessageFormat.Text;
         //private static DiscoveryListener discoveryListener;
-        //private static TCPServer tcpServer;
+        private static TcpServer tcpServer;
         private static WSServer wsServer;
 
         private static HttpServer httpServer;
+
+        private static SerialPort uart;
 
         //private static Buttons btns;
         #endregion
@@ -72,6 +75,12 @@ namespace DTC.Server
         }
         private static void InitHardware()
         {
+            uart = new SerialPort("COM1", 115200);
+            uart.DataReceived += uart_DataReceived;
+            uart.ErrorReceived += uart_ErrorReceived;
+            uart.Open();
+
+
             //mainBooster = new Booster(
             //    true,
             //    HardwareConfiguration.PinMainBoosterEnable,
@@ -101,10 +110,9 @@ namespace DTC.Server
             //if (options.BroadcastBoostersCurrent)
             //    timerBoostersCurrent = new Timer(TimerBustersCurrent_Tick, null, 0, 1000);
 
-            ////ackDetector = new AcknowledgementDetector(HardwareConfiguration.PinAcknowledgementSense);
-
             //btns = new Buttons();
         }
+
         private static void InitNetwork()
         {
             //discoveryListener = new DiscoveryListener();
@@ -118,6 +126,8 @@ namespace DTC.Server
             wsServer.SessionConnected += Session_Connected;
             wsServer.SessionDataReceived += Session_DataReceived;
             wsServer.SessionDisconnected += Session_Disconnected;
+
+            tcpServer = new TcpServer(Options.IPPort);
 
             httpServer = new HttpServer();
             httpServer.OnGetRequest += httpServer_OnGetRequest;
@@ -135,12 +145,15 @@ namespace DTC.Server
         {
             //new Thread(delegate { networkManager.Start(); }).Start();
 
+            
+
             //httpServer.Start("http", 81; // for emulator only!!!
             //wsServer.Start(); // for emulator only!!!
+            //tcpServer.Start();
         }
         private static void InitDB()
         {
-            dbManager.OpenInMemory();
+            //dbManager.OpenInMemory();
 
 
 
@@ -235,7 +248,7 @@ namespace DTC.Server
         private static void Network_Started(object sender, EventArgs e)
         {
             ////discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
-            ////tcpServer.Start();
+            //tcpServer.Start();
 
             //httpServer.Start("http", 80);
             //wsServer.Start();
@@ -294,6 +307,15 @@ namespace DTC.Server
         private static void Session_Disconnected(TcpSession session)
         {
             // TODO: release locos and accessories
+        }
+
+        private static void uart_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            
+        }
+        private static void uart_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
         #endregion
 

@@ -90,16 +90,16 @@ namespace MFE.Storage
                 RemovableMedia.Eject += RemovableMedia_Ejected;
                 new Thread(SDWatcher) { Priority = ThreadPriority.BelowNormal }.Start();
 
-                try
-                {
-                    flash = new PersistentStorage("NAND");
-                    flash.MountFileSystem();
-                    //string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
-                }
-                catch (Exception e)
-                {
-                    Debug.Print(e.Message);
-                }
+                //try
+                //{
+                //    flash = new PersistentStorage("NAND");
+                //    flash.MountFileSystem();
+                //    //string rootDirectory = VolumeInfo.GetVolumes()[0].RootDirectory;
+                //}
+                //catch (Exception e)
+                //{
+                //    Debug.Print(e.Message);
+                //}
             }
         }
         #endregion
