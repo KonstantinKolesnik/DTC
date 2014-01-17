@@ -9,7 +9,8 @@ namespace MFE.Data
     public class DBManager
     {
         #region Fields
-        private const string MEMORY_FILENAME = ":memory:";
+        public const string MEMORY_FILENAME = ":memory:";
+        
         private string fileName = null;
         private Database db = new Database();
         #endregion
@@ -35,26 +36,10 @@ namespace MFE.Data
         // Parameters:
         //   path:
         //     :memory: to create database in RAM
-        public bool OpenInMemory()
+        public bool Open(string path)
         {
             try
             {
-                db.Open(MEMORY_FILENAME);
-                fileName = MEMORY_FILENAME;
-            }
-            catch
-            {
-                fileName = null;
-                return false;
-            }
-
-            return true;
-        }
-        public bool OpenOnSD(string path)
-        {
-            try
-            {
-                path = "\\SD\\" + path;
                 db.Open(path);
                 fileName = path;
             }

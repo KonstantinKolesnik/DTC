@@ -2,7 +2,6 @@ using GHI.Premium.IO;
 using GHI.Premium.System;
 using GHI.Premium.USBHost;
 using MFE.Core;
-using Microsoft.SPOT;
 using Microsoft.SPOT.IO;
 using System;
 using System.Collections;
@@ -11,6 +10,7 @@ using System.Threading;
 
 namespace MFE.Storage
 {
+    // !!! the SD related code doesn't work on Gadgeteer; for EMX/Cobra only
     public static class DriveManager
     {
         #region Fields
@@ -38,7 +38,7 @@ namespace MFE.Storage
 
                 string[] roots = new string[drvs.Length];
                 for (int i = 0; i < drvs.Length; i++)
-                    roots[i] = drvs[i].RootName;
+                    roots[i] = drvs[i].VolumeInfo.RootDirectory;
 
                 return roots;
             }
@@ -63,20 +63,13 @@ namespace MFE.Storage
         {
             if (Utils.IsEmulator)
             {
-                VolumeInfo emulatedRoot = VolumeInfo.GetVolumes()[0];
-                emulatedRoot.Format(0);
+                VolumeInfo emulatedVolume = VolumeInfo.GetVolumes()[0];
+                emulatedVolume.Format(0);
 
-                Drive drive = new Drive()
-                {
-                    IsFormatted = emulatedRoot.IsFormatted,
-                    RootName = emulatedRoot.RootDirectory,
-                    VolumeName = emulatedRoot.Name,
-                    VolumeInfo = emulatedRoot,
-                };
-                drives.Add(drive);
+                drives.Add(new Drive() { VolumeInfo = emulatedVolume });
 
                 if (DriveAdded != null)
-                    DriveAdded(emulatedRoot.RootDirectory);
+                    DriveAdded(emulatedVolume.RootDirectory);
             }
             else
             {
@@ -184,12 +177,12 @@ namespace MFE.Storage
         {
             if (device.TYPE == USBH_DeviceType.MassStorage)
             {
-                Drive drive = new Drive();
-                drive.Device = device;
+                Drive drive = new Drive() { Device = device };
+
                 try
                 {
-                    drive.ps = new PersistentStorage(device);
-                    drive.ps.MountFileSystem();
+                    drive.Storage = new PersistentStorage(device);
+                    drive.Storage.MountFileSystem();
                     drives.Add(drive); // Add drive to Array
                 }
                 catch (Exception)// e)
@@ -208,9 +201,6 @@ namespace MFE.Storage
                 try
                 {
                     Drive drive = (Drive)drives[drives.Count - 1];
-                    drive.IsFormatted = e.Volume.IsFormatted;
-                    drive.RootName = e.Volume.RootDirectory;
-                    drive.VolumeName = e.Volume.Name;
                     drive.VolumeInfo = e.Volume;
                     drives[drives.Count - 1] = drive;
                 }
@@ -218,12 +208,11 @@ namespace MFE.Storage
             }
             else
             {
-                Drive drive = new Drive();
-                drive.VolumeInfo = e.Volume;
-                drive.IsFormatted = e.Volume.IsFormatted;
-                drive.RootName = e.Volume.RootDirectory;
-                drive.VolumeName = e.Volume.Name;
-                drive.ps = sdCard;
+                Drive drive = new Drive()
+                {
+                    VolumeInfo = e.Volume,
+                    Storage = sdCard
+                };
                 drives.Add(drive);
             }
 
@@ -252,11 +241,11 @@ namespace MFE.Storage
             for (int i = 0; i < drives.Count; i++)
             {
                 drive = (Drive)drives[i];
-                if (drive.RootName == e.Volume.RootDirectory)
+                if (drive.VolumeInfo.RootDirectory == e.Volume.RootDirectory)
                 {
                     drives.Remove(drive);
                     if (drive.Device != null)
-                        drive.ps.UnmountFileSystem();
+                        drive.Storage.UnmountFileSystem();
 
                     if (DriveRemoved != null)
                         DriveRemoved(e.Volume.RootDirectory);

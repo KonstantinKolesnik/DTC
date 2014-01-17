@@ -1,15 +1,20 @@
+using Gadgeteer;
+using Gadgeteer.Modules.GHIElectronics;
 using MFE.Data;
 using MFE.Net.Http;
+using MFE.Net.Managers;
 using MFE.Net.Messaging;
 using MFE.Net.Tcp;
 using MFE.Net.WebSocket;
-using MFE.Storage;
 using Microsoft.SPOT;
 using System.Collections;
 using System.IO;
 using System.IO.Ports;
 using System.Net;
 using System.Reflection;
+using System.Threading;
+using GT = Gadgeteer;
+using GTM = Gadgeteer.Modules;
 
 namespace DTC.Server
 {
@@ -17,30 +22,38 @@ namespace DTC.Server
     {
         #region Fields
         private const uint optionsID = 0;
-        private static Options options;
+        private Options options;
 
-        //private static string root = @"\SD"; // for device
-        private static string root = @"\WINFS"; // for emulator
+        //private string root = @"\SD"; // for device
+        private string root = @"\WINFS"; // for emulator
 
-        private static string dbFileName = "Layout.dat";
-        private static DBManager dbManager = new DBManager();
+        private string dbFileName = "Layout.dat";
+        private DBManager dbManager = new DBManager();
 
-        //private static Booster mainBooster;
-        //private static Booster progBooster;
-        //private static Timer timerBoostersCurrent;
+        //private Booster mainBooster;
+        //private Booster progBooster;
+        //private Timer timerBoostersCurrent;
 
-        //private static INetworkManager networkManager;
+        private INetworkManager networkManager;
 
-        private static NetworkMessageFormat msgFormat = NetworkMessageFormat.Text;
-        //private static DiscoveryListener discoveryListener;
-        private static TcpServer tcpServer;
-        private static WSServer wsServer;
+        private NetworkMessageFormat msgFormat = NetworkMessageFormat.Text;
+        //private DiscoveryListener discoveryListener;
+        private TcpServer tcpServer;
+        private WSServer wsServer;
 
-        private static HttpServer httpServer;
+        private HttpServer httpServer;
 
-        private static SerialPort uart;
+        private SerialPort uart;
 
-        //private static Buttons btns;
+        //private Buttons btns;
+
+        GT.Timer timer;
+
+
+        // external modules:
+        public LED_Strip ledStrip;
+        public SDCard sdCard;
+        public WiFi_RS21 wifiRS21;
         #endregion
 
         #region Properties
@@ -53,8 +66,11 @@ namespace DTC.Server
         #region Constructor
         public Model()
         {
-            DriveManager.DriveAdded += DriveManager_DriveAdded;
+        }
+        #endregion
 
+        public void Start()
+        {
             InitData();
             InitHardware();
             InitDB();
@@ -63,18 +79,32 @@ namespace DTC.Server
             // for test only!!!
             //IsPowerOn = true;
         }
-        #endregion
 
         #region Private methods
-        private static void InitData()
+        private void InitData()
         {
             //options = Options.LoadFromFlash(optionsID);
-
             //options = Options.LoadFromSD();
             //ApplyOptions();
         }
-        private static void InitHardware()
+        private void InitHardware()
         {
+            ledStrip.TurnAllLedsOff();
+
+            timer = new GT.Timer(50);
+            timer.Tick += timer_Tick;
+
+            sdCard.SDCardMounted += sdCard_SDCardMounted;
+            sdCard.SDCardUnmounted += sdCard_SDCardUnmounted;
+            if (sdCard.IsCardInserted)
+            {
+                sdCard.MountSDCard();
+                Thread.Sleep(500);
+                //options = Options.LoadFromSD();
+                //ApplyOptions();
+            }
+
+
             uart = new SerialPort("COM1", 115200);
             uart.DataReceived += uart_DataReceived;
             uart.ErrorReceived += uart_ErrorReceived;
@@ -113,7 +143,11 @@ namespace DTC.Server
             //btns = new Buttons();
         }
 
-        private static void InitNetwork()
+        void timer_Tick(GT.Timer timer)
+        {
+            ledStrip[3] = !ledStrip[3];
+        }
+        private void InitNetwork()
         {
             //discoveryListener = new DiscoveryListener();
 
@@ -133,79 +167,74 @@ namespace DTC.Server
             httpServer.OnGetRequest += httpServer_OnGetRequest;
 
             //if (options.UseWiFi)
-            //    networkManager = new WiFiManager(true, HardwareConfiguration.PinNetworkLED, options.WiFiSSID, options.WiFiPassword);
+            //networkManager = new WiFiManager(wifiRS21, options.WiFiSSID, options.WiFiPassword);//HardwareConfiguration.PinNetworkLED, 
+            //networkManager = new WiFiManager(wifiRS21, "GothicMaestro", "kotyara75");//HardwareConfiguration.PinNetworkLED, 
             //else
-            //    networkManager = new EthernetManager(HardwareConfiguration.PinNetworkLED);
-            //networkManager.Started += new EventHandler(Network_Started);
-            //networkManager.Stopped += new EventHandler(Network_Stopped);
+            networkManager = new EthernetManager();//HardwareConfiguration.PinNetworkLED);
+            networkManager.Started += new EventHandler(Network_Started);
+            networkManager.Stopped += new EventHandler(Network_Stopped);
 
-            StartNetwork();
+            //StartNetwork();
         }
-        private static void StartNetwork()
+        private void StartNetwork()
         {
-            //new Thread(delegate { networkManager.Start(); }).Start();
+            timer.Start();
+            new Thread(delegate {
+                networkManager.Start();
+            }).Start();
 
-            
 
-            //httpServer.Start("http", 81; // for emulator only!!!
+
+            //httpServer.Start("http", 80); // for emulator only!!!
             //wsServer.Start(); // for emulator only!!!
-            //tcpServer.Start();
+            //tcpServer.Start(); // for emulator only!!!
         }
-        private static void InitDB()
+        private void InitDB()
         {
-            //dbManager.OpenInMemory();
-
-
-
-
-
-
-
-            return;
-
-
             // for test!!!
-            bool dbExists = File.Exists(root + "\\" +dbFileName);
+            bool dbExists = File.Exists(sdCard.GetStorageDevice().RootDirectory + "\\" + dbFileName);
             //if (dbExists)
             //    File.Delete(dbFileName);
 
-            dbManager.OpenOnSD(dbFileName);
-            if (!dbExists)
+            if (dbManager.Open(sdCard.GetStorageDevice().RootDirectory + "\\" + dbFileName))
             {
-                // add tables;
+                if (!dbExists)
+                {
+                    // add tables;
+                }
+
+                ////dbManager.Add(new Consist() { Name = "Consist 1", });
+                ////dbManager.Add(new Consist() { Name = "Consist 2", });
+                ////dbManager.Add(new Consist() { Name = "Consist 3", });
+
+                ////dbManager.Add(new Locomotive() { Name = "Loco 1", Protocol = ProtocolType.DCC14 });
+                ////dbManager.Add(new Locomotive() { Name = "Loco 2", Protocol = ProtocolType.DCC28 });
+                ////dbManager.Add(new Locomotive() { Name = "Loco 3", Protocol = ProtocolType.DCC128 });
+
+                //Debug.Print(Utils.FreeRAM(true));
+
+                //for (int i = 0; i < 100; i++)
+                //    dbManager.Add(new Locomotive() { Name = "Loco " + i, Protocol = ProtocolType.DCC28 });
+
+                //Debug.Print("DB size: " + Utils.FormatSize(dbManager.Size));
+
+
+
+                //Debug.Print(Utils.FreeRAM(true));
+                //ArrayList locos = dbManager.GetLocomotives();
+                //Debug.Print(Utils.FreeRAM(true));
+
+                ////Locomotive loc = (Locomotive)locos[0];
+                ////Locomotive loc2 = dbManager.GetLocomotive(loc.ID);
+                ////Debug.Print(loc2.Name);
+
+                ////ArrayList consists = dbManager.GetConsists();
+                ////Consist consist = (Consist)consists[1];
+                ////Consist consist2 = dbManager.GetConsist(consist.ID);
+                ////Debug.Print(consist2.Name);
+
+                dbManager.Close();
             }
-
-            ////dbManager.Add(new Consist() { Name = "Consist 1", });
-            ////dbManager.Add(new Consist() { Name = "Consist 2", });
-            ////dbManager.Add(new Consist() { Name = "Consist 3", });
-
-            ////dbManager.Add(new Locomotive() { Name = "Loco 1", Protocol = ProtocolType.DCC14 });
-            ////dbManager.Add(new Locomotive() { Name = "Loco 2", Protocol = ProtocolType.DCC28 });
-            ////dbManager.Add(new Locomotive() { Name = "Loco 3", Protocol = ProtocolType.DCC128 });
-
-            //Debug.Print(Utils.FreeRAM(true));
-
-            //for (int i = 0; i < 100; i++)
-            //    dbManager.Add(new Locomotive() { Name = "Loco " + i, Protocol = ProtocolType.DCC28 });
-
-            //Debug.Print("DB size: " + Utils.FormatSize(dbManager.Size));
-
-
-
-            //Debug.Print(Utils.FreeRAM(true));
-            //ArrayList locos = dbManager.GetLocomotives();
-            //Debug.Print(Utils.FreeRAM(true));
-
-            ////Locomotive loc = (Locomotive)locos[0];
-            ////Locomotive loc2 = dbManager.GetLocomotive(loc.ID);
-            ////Debug.Print(loc2.Name);
-
-            ////ArrayList consists = dbManager.GetConsists();
-            ////Consist consist = (Consist)consists[1];
-            ////Consist consist2 = dbManager.GetConsist(consist.ID);
-            ////Debug.Print(consist2.Name);
-
-            //dbManager.Close();
         }
         private void CreateDB()
         {
@@ -216,7 +245,7 @@ namespace DTC.Server
 
         }
 
-        private static void ApplyOptions()
+        private void ApplyOptions()
         {
             //if (mainBooster != null)
             //    mainBooster.CurrentThreshould = options.MainBridgeCurrentThreshould;
@@ -236,21 +265,27 @@ namespace DTC.Server
         #endregion
 
         #region Event handlers
-        private static void DriveManager_DriveAdded(string Root)
+        private void sdCard_SDCardMounted(SDCard sender, StorageDevice SDCard)
         {
-            if (Root == "\\SD")
-            {
-                //    options = Options.LoadFromSD();
-                //    ApplyOptions();
-            }
+            Debug.Print("SD card has been successfully mounted. You can now read/write/create/delete files");
+            Debug.Print("Unmount before removing");
+        }
+        private void sdCard_SDCardUnmounted(SDCard sender)
+        {
+            Debug.Print("The SD card has been unmounted");
+            Debug.Print("DO NOT try to access it without mounting it again first");
         }
 
-        private static void Network_Started(object sender, EventArgs e)
+
+        private void Network_Started(object sender, EventArgs e)
         {
+            timer.Stop();
+            ledStrip[3] = true;
+
             ////discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
             //tcpServer.Start();
 
-            //httpServer.Start("http", 80);
+            httpServer.Start("http", 80);
             //wsServer.Start();
 
             //NameService ns = new NameService();
@@ -258,11 +293,11 @@ namespace DTC.Server
 
             //Beeper.PlaySound(Beeper.SoundID.Click);
         }
-        private static void Network_Stopped(object sender, EventArgs e)
+        private void Network_Stopped(object sender, EventArgs e)
         {
             //Beeper.PlaySound(Beeper.SoundID.PowerOff);
 
-            //httpServer.Stop();
+            httpServer.Stop();
             //wsServer.Stop();
 
             //Thread.Sleep(1000);
@@ -270,23 +305,29 @@ namespace DTC.Server
             //StartNetwork();
         }
 
-        private static void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
+        private void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
         {
-            if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
+
+
+
+            if (sdCard.IsCardMounted)
             {
-                //httpServer.ProcessPasswordProtectedArea(request, response);
+                if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
+                {
+                    //httpServer.ProcessPasswordProtectedArea(request, response);
+                }
+                //else if (path.ToLower().IndexOf("json") != -1)
+                //    ProcessJSONRequest(path, parameters, response);
+                else
+                    httpServer.SendFile(sdCard.GetStorageDevice().RootDirectory + "\\DTC" + path, response);
             }
-            //else if (path.ToLower().IndexOf("json") != -1)
-            //    ProcessJSONRequest(path, parameters, response);
-            else
-                httpServer.SendFile(root + path, response);
         }
 
-        private static void Session_Connected(TcpSession session)
+        private void Session_Connected(TcpSession session)
         {
             session.Tag = new NetworkMessageReceiver(msgFormat);
         }
-        private static bool Session_DataReceived(TcpSession session, byte[] data)
+        private bool Session_DataReceived(TcpSession session, byte[] data)
         {
             //networkManager.OnBeforeMessage();
 
@@ -304,23 +345,23 @@ namespace DTC.Server
 
             return false; // don't disconnect
         }
-        private static void Session_Disconnected(TcpSession session)
+        private void Session_Disconnected(TcpSession session)
         {
             // TODO: release locos and accessories
         }
 
-        private static void uart_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void uart_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             
         }
-        private static void uart_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        private void uart_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
             throw new System.NotImplementedException();
         }
         #endregion
 
         #region Network message processing
-        private static NetworkMessage ProcessNetworkMessage(NetworkMessage msg)
+        private NetworkMessage ProcessNetworkMessage(NetworkMessage msg)
         {
             NetworkMessage response = null;
 
@@ -343,7 +384,7 @@ namespace DTC.Server
         }
 
 
-        private static NetworkMessage GetVersionMessage()
+        private NetworkMessage GetVersionMessage()
         {
             NetworkMessage msg = new NetworkMessage("Version");
             msg["Version"] = Version;

@@ -11,11 +11,9 @@ namespace MFE.Storage
     [Serializable]
     public struct Drive
     {
-        public PersistentStorage ps;
-        public bool IsFormatted;
-        public string VolumeName;
-        public string RootName;
         public VolumeInfo VolumeInfo;
+
+        public PersistentStorage Storage;
         public USBH_Device Device;
     }
 }

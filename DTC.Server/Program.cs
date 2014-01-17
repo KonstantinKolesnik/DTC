@@ -33,12 +33,12 @@ namespace DTC.Server
                 timer.Start();
             *******************************************************************************************/
 
-
             Model model = new Model();
-            //model.UART = ...
+            model.sdCard = sdCard;
+            model.ledStrip = led_Strip;
+            model.wifiRS21 = wifi_RS21;
+            model.Start();
 
-
-            //model.Start();
             Mainboard.SetDebugLED(true);
         }
     }

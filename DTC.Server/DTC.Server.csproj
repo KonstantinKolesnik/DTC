@@ -56,19 +56,16 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Gadgeteer" />
-    <Reference Include="Gadgeteer.WebClient, Version=2.42.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Gadgeteer.WebServer, Version=2.42.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="GHI.Premium.Net, Version=4.2.11.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="GHIElectronics.Gadgeteer.FEZRaptor, Version=4.2.101.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="GTM.GHIElectronics.Ethernet_ENC28, Version=4.2.101.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="GTM.GHIElectronics.LED_Strip, Version=4.2.101.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="GTM.GHIElectronics.SDCard, Version=4.2.101.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="GTM.GHIElectronics.UsbClientDP, Version=4.2.101.0, Culture=neutral, processorArchitecture=MSIL">
@@ -115,6 +112,10 @@
     <ProjectReference Include="..\MFE.Data\MFE.Data.csproj">
       <Project>{7D33EA61-AAD1-4499-AD04-3540AF13B614}</Project>
       <Name>MFE.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MFE.Net.Managers\MFE.Net.Managers.csproj">
+      <Project>{A8ACC028-99A0-4E9F-84F7-33E9D08AF087}</Project>
+      <Name>MFE.Net.Managers</Name>
     </ProjectReference>
     <ProjectReference Include="..\MFE.Net.Messaging\MFE.Net.Messaging.csproj">
       <Project>{632B23F9-A020-4C66-93A3-DE9AF4529CB9}</Project>
