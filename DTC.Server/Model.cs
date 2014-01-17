@@ -7,6 +7,7 @@ using MFE.Net.Messaging;
 using MFE.Net.Tcp;
 using MFE.Net.WebSocket;
 using Microsoft.SPOT;
+using System;
 using System.Collections;
 using System.IO;
 using System.IO.Ports;
@@ -48,12 +49,6 @@ namespace DTC.Server
         //private Buttons btns;
 
         GT.Timer timer;
-
-
-        // external modules:
-        public LED_Strip ledStrip;
-        public SDCard sdCard;
-        public WiFi_RS21 wifiRS21;
         #endregion
 
         #region Properties
@@ -71,39 +66,35 @@ namespace DTC.Server
 
         public void Start()
         {
-            InitData();
-            InitHardware();
-            InitDB();
+            //InitData();
+            //InitHardware();
+            //InitDB();
             InitNetwork();
-
-            // for test only!!!
-            //IsPowerOn = true;
         }
 
         #region Private methods
         private void InitData()
         {
             //options = Options.LoadFromFlash(optionsID);
-            //options = Options.LoadFromSD();
             //ApplyOptions();
         }
         private void InitHardware()
         {
-            ledStrip.TurnAllLedsOff();
+            HWConfig.Indicators.TurnAllLedsOff();
 
-            timer = new GT.Timer(50);
-            timer.Tick += timer_Tick;
+            timer = new GT.Timer(300);
+            timer.Tick += delegate(GT.Timer t) { HWConfig.Indicators[HWConfig.LEDNetwork] = !HWConfig.Indicators[HWConfig.LEDNetwork]; };
 
-            sdCard.SDCardMounted += sdCard_SDCardMounted;
-            sdCard.SDCardUnmounted += sdCard_SDCardUnmounted;
-            if (sdCard.IsCardInserted)
+            HWConfig.SDCard.SDCardMounted += sdCard_Mounted;
+            HWConfig.SDCard.SDCardUnmounted += sdCard_Unmounted;
+            if (HWConfig.SDCard.IsCardInserted)
             {
-                sdCard.MountSDCard();
+                HWConfig.SDCard.MountSDCard();
                 Thread.Sleep(500);
+
                 //options = Options.LoadFromSD();
                 //ApplyOptions();
             }
-
 
             uart = new SerialPort("COM1", 115200);
             uart.DataReceived += uart_DataReceived;
@@ -142,11 +133,6 @@ namespace DTC.Server
 
             //btns = new Buttons();
         }
-
-        void timer_Tick(GT.Timer timer)
-        {
-            ledStrip[3] = !ledStrip[3];
-        }
         private void InitNetwork()
         {
             //discoveryListener = new DiscoveryListener();
@@ -156,34 +142,35 @@ namespace DTC.Server
             //tcpServer.SessionDataReceived += new TCPSessionDataReceived(Session_DataReceived);
             //tcpServer.SessionDisconnected += new TCPSessionEventHandler(Session_Disconnected);
 
-            wsServer = new WSServer(Options.WSPort);
-            wsServer.SessionConnected += Session_Connected;
-            wsServer.SessionDataReceived += Session_DataReceived;
-            wsServer.SessionDisconnected += Session_Disconnected;
+            //wsServer = new WSServer(Options.WSPort);
+            //wsServer.SessionConnected += Session_Connected;
+            //wsServer.SessionDataReceived += Session_DataReceived;
+            //wsServer.SessionDisconnected += Session_Disconnected;
 
-            tcpServer = new TcpServer(Options.IPPort);
+            //tcpServer = new TcpServer(Options.IPPort);
 
-            httpServer = new HttpServer();
-            httpServer.OnGetRequest += httpServer_OnGetRequest;
+            //httpServer = new HttpServer();
+            //httpServer.OnGetRequest += httpServer_OnGetRequest;
 
             //if (options.UseWiFi)
-            //networkManager = new WiFiManager(wifiRS21, options.WiFiSSID, options.WiFiPassword);//HardwareConfiguration.PinNetworkLED, 
-            //networkManager = new WiFiManager(wifiRS21, "GothicMaestro", "kotyara75");//HardwareConfiguration.PinNetworkLED, 
+            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);//HardwareConfiguration.PinNetworkLED, 
+            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, "GothicMaestro", "kotyara75");//HardwareConfiguration.PinNetworkLED,
+            networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, "TW", "techwiregreyc");
             //else
-            networkManager = new EthernetManager();//HardwareConfiguration.PinNetworkLED);
+            //networkManager = new EthernetManager();//HardwareConfiguration.PinNetworkLED);
+
             networkManager.Started += new EventHandler(Network_Started);
             networkManager.Stopped += new EventHandler(Network_Stopped);
 
-            //StartNetwork();
+            StartNetwork();
         }
         private void StartNetwork()
         {
-            timer.Start();
-            new Thread(delegate {
+            //timer.Start();
+            new Thread(delegate
+            {
                 networkManager.Start();
             }).Start();
-
-
 
             //httpServer.Start("http", 80); // for emulator only!!!
             //wsServer.Start(); // for emulator only!!!
@@ -192,11 +179,11 @@ namespace DTC.Server
         private void InitDB()
         {
             // for test!!!
-            bool dbExists = File.Exists(sdCard.GetStorageDevice().RootDirectory + "\\" + dbFileName);
+            bool dbExists = File.Exists(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\" + dbFileName);
             //if (dbExists)
             //    File.Delete(dbFileName);
 
-            if (dbManager.Open(sdCard.GetStorageDevice().RootDirectory + "\\" + dbFileName))
+            if (dbManager.Open(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\" + dbFileName))
             {
                 if (!dbExists)
                 {
@@ -240,9 +227,6 @@ namespace DTC.Server
         {
             //db.ExecuteNonQuery("CREATE Table Locomotives(ID TEXT, Name TEXT, Description TEXT, Protocol INTEGER, ConsistID TEXT, ConsistForward INTEGER)");
             //db.ExecuteNonQuery("CREATE Table Consists(ID TEXT, Name TEXT, Description TEXT)");
-
-
-
         }
 
         private void ApplyOptions()
@@ -265,27 +249,26 @@ namespace DTC.Server
         #endregion
 
         #region Event handlers
-        private void sdCard_SDCardMounted(SDCard sender, StorageDevice SDCard)
+        private void sdCard_Mounted(SDCard sender, StorageDevice SDCard)
         {
-            Debug.Print("SD card has been successfully mounted. You can now read/write/create/delete files");
-            Debug.Print("Unmount before removing");
+            Debug.Print("SD card mounted. Unmount before removing");
         }
-        private void sdCard_SDCardUnmounted(SDCard sender)
+        private void sdCard_Unmounted(SDCard sender)
         {
-            Debug.Print("The SD card has been unmounted");
-            Debug.Print("DO NOT try to access it without mounting it again first");
+            Debug.Print("SD card unmounted. Don't try to access it without mounting it again first.");
         }
-
 
         private void Network_Started(object sender, EventArgs e)
         {
-            timer.Stop();
-            ledStrip[3] = true;
+            HWConfig.Mainboard.SetDebugLED(true);
+
+            //timer.Stop();
+            //HWConfig.Indicators[HWConfig.LEDNetwork] = true;
 
             ////discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
             //tcpServer.Start();
 
-            httpServer.Start("http", 80);
+            //httpServer.Start("http", 80);
             //wsServer.Start();
 
             //NameService ns = new NameService();
@@ -297,7 +280,7 @@ namespace DTC.Server
         {
             //Beeper.PlaySound(Beeper.SoundID.PowerOff);
 
-            httpServer.Stop();
+            //httpServer.Stop();
             //wsServer.Stop();
 
             //Thread.Sleep(1000);
@@ -307,10 +290,7 @@ namespace DTC.Server
 
         private void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
         {
-
-
-
-            if (sdCard.IsCardMounted)
+            if (HWConfig.SDCard.IsCardMounted)
             {
                 if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
                 {
@@ -319,7 +299,7 @@ namespace DTC.Server
                 //else if (path.ToLower().IndexOf("json") != -1)
                 //    ProcessJSONRequest(path, parameters, response);
                 else
-                    httpServer.SendFile(sdCard.GetStorageDevice().RootDirectory + "\\DTC" + path, response);
+                    httpServer.SendFile(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\DTC" + path, response);
             }
         }
 
@@ -356,7 +336,7 @@ namespace DTC.Server
         }
         private void uart_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
         #endregion
 

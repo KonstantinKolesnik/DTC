@@ -78,6 +78,18 @@ namespace MFE.Core
             return new Guid(ConvertBase64My.FromBase64String(s));
         }
         #endregion
+
+        /// <summary>
+        /// Convert Byte to HEX string.
+        /// </summary>
+        /// <param name="number">number</param>
+        /// <returns>HEX in a string</returns>
+        public static string ByteToHex(byte number)
+        {
+            string hex = "0123456789ABCDEF";
+            return new string(new char[] { hex[(number & 0xF0) >> 4], hex[number & 0x0F] });
+        }
+
     }
 
     static class ConvertBase64My

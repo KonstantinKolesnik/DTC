@@ -5,6 +5,7 @@ using GHI.Premium.Net;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using Gadgeteer.Modules.GHIElectronics;
+using MFE.Core;
 //using System.Net;
 
 namespace MFE.Net.Managers
@@ -383,23 +384,9 @@ namespace MFE.Net.Managers
         }
         #endregion
 
-        private static class Auxiliary
-        {
-            /// <summary>
-            /// Convert Byte to HEX string.
-            /// </summary>
-            /// <param name="number">number</param>
-            /// <returns>HEX in a string</returns>
-            public static string ByteToHex(byte number)
-            {
-                string hex = "0123456789ABCDEF";
-                return new string(new char[] { hex[(number & 0xF0) >> 4], hex[number & 0x0F] });
-            }
-        }
         private static string WiFiNetworkInfoToString(WiFiNetworkInfo info)
         {
-            string str;
-            str = "SSID: " + info.SSID + "\n";
+            string str = "SSID: " + info.SSID + "\n";
             str += "Channel Number: " + info.ChannelNumber + "\n";
             str += "RSSI: -" + info.RSSI + "dB" + "\n";
             str += "Security Mode: ";
@@ -409,7 +396,7 @@ namespace MFE.Net.Managers
                 case SecurityMode.WEP: str += "WEP"; break;
                 case SecurityMode.WPA: str += "WPA"; break;
                 case SecurityMode.WPA2: str += "WPA2"; break;
-            }
+            };
             str += "\n";
             str += "Network Type: ";
             switch (info.networkType)
@@ -418,12 +405,15 @@ namespace MFE.Net.Managers
                 case NetworkType.AdHoc: str += "AdHoc"; break;
             }
             str += "\n";
-            str += "BS MAC: " + Auxiliary.ByteToHex(info.PhysicalAddress[0]) + "-"
-                                + Auxiliary.ByteToHex(info.PhysicalAddress[1]) + "-"
-                                + Auxiliary.ByteToHex(info.PhysicalAddress[2]) + "-"
-                                + Auxiliary.ByteToHex(info.PhysicalAddress[3]) + "-"
-                                + Auxiliary.ByteToHex(info.PhysicalAddress[4]) + "-"
-                                + Auxiliary.ByteToHex(info.PhysicalAddress[5]) + "\n";
+            str += "BS MAC: " +
+                Utils.ByteToHex(info.PhysicalAddress[0]) + "-" +
+                Utils.ByteToHex(info.PhysicalAddress[1]) + "-" +
+                Utils.ByteToHex(info.PhysicalAddress[2]) + "-" +
+                Utils.ByteToHex(info.PhysicalAddress[3]) + "-" +
+                Utils.ByteToHex(info.PhysicalAddress[4]) + "-" +
+                Utils.ByteToHex(info.PhysicalAddress[5]);
+            str += "\n";
+
             return str;
         }
     }

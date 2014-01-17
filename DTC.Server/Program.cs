@@ -17,29 +17,21 @@ namespace DTC.Server
 {
     public partial class Program
     {
-        // This method is run when the mainboard is powered up or reset.   
         void ProgramStarted()
         {
-            /*******************************************************************************************
-            Modules added in the Program.gadgeteer designer view are used by typing 
-            their name followed by a period, e.g.  button.  or  camera.
-            
-            Many modules generate useful events. Type +=<tab><tab> to add a handler to an event, e.g.:
-                button.ButtonPressed +=<tab><tab>
-            
-            If you want to do something periodically, use a GT.Timer and handle its Tick event, e.g.:
-                GT.Timer timer = new GT.Timer(1000); // every second (1000ms)
-                timer.Tick +=<tab><tab>
-                timer.Start();
-            *******************************************************************************************/
+            HWConfig.Mainboard = Mainboard;
+            HWConfig.SDCard = sdCard;
+            HWConfig.Indicators = led_Strip;
+            HWConfig.WiFi = wifi_RS21;
 
-            Model model = new Model();
-            model.sdCard = sdCard;
-            model.ledStrip = led_Strip;
-            model.wifiRS21 = wifi_RS21;
-            model.Start();
+            //HWConfig.Indicators.TurnAllLedsOff();
 
-            Mainboard.SetDebugLED(true);
+            GT.Timer timer = new GT.Timer(1000);
+            timer.Tick += delegate(GT.Timer t) { t.Stop(); new Model().Start(); };
+            timer.Start();
+            //new Model().Start();
+
+            //Mainboard.SetDebugLED(true);
         }
     }
 }
