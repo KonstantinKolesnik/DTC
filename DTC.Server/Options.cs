@@ -12,7 +12,7 @@ namespace DTC.Server
     public class Options
     {
         #region Constants
-        private const string fileName = @"\SD\options.xml";
+        private const string fileName = @"\DTC\options.xml";
         public const int IPPort = 8000;
         public const int UDPPort = 9000;
         public const int WSPort = 12000;
@@ -26,10 +26,8 @@ namespace DTC.Server
         public bool UseWiFi = true;
         public string WiFiSSID = "GothicMaestro";
         public string WiFiPassword = "kotyara75";
-
-        public int MainBridgeCurrentThreshould = 3700; // 3.7A
-        public int ProgBridgeCurrentThreshould = 600; // 0.6A
-        public bool BroadcastBoostersCurrent = false;
+        //public string WiFiSSID = "TW";
+        //public string WiFiPassword = "techwiregreyc";
         #endregion
 
         #region Serialization / deserialization
@@ -57,12 +55,12 @@ namespace DTC.Server
                             {
                                 res = new Options();
 
-                                if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("MainBridgeCurrentThreshould")))
-                                    res.MainBridgeCurrentThreshould = int.Parse(reader.GetAttribute("MainBridgeCurrentThreshould"));
-                                if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("ProgBridgeCurrentThreshould")))
-                                    res.ProgBridgeCurrentThreshould = int.Parse(reader.GetAttribute("ProgBridgeCurrentThreshould"));
-                                if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("BroadcastBoostersCurrent")))
-                                    res.BroadcastBoostersCurrent = reader.GetAttribute("BroadcastBoostersCurrent") == bool.TrueString;
+                                //if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("MainBridgeCurrentThreshould")))
+                                //    res.MainBridgeCurrentThreshould = int.Parse(reader.GetAttribute("MainBridgeCurrentThreshould"));
+                                //if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("ProgBridgeCurrentThreshould")))
+                                //    res.ProgBridgeCurrentThreshould = int.Parse(reader.GetAttribute("ProgBridgeCurrentThreshould"));
+                                //if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("BroadcastBoostersCurrent")))
+                                //    res.BroadcastBoostersCurrent = reader.GetAttribute("BroadcastBoostersCurrent") == bool.TrueString;
 
                                 if (!Utils.StringIsNullOrEmpty(reader.GetAttribute("UseWiFi")))
                                     res.UseWiFi = reader.GetAttribute("UseWiFi") == bool.TrueString;
@@ -97,9 +95,9 @@ namespace DTC.Server
 
                     writer.WriteStartElement("Options");
 
-                    writer.WriteAttributeString("MainBridgeCurrentThreshould", MainBridgeCurrentThreshould.ToString());
-                    writer.WriteAttributeString("ProgBridgeCurrentThreshould", ProgBridgeCurrentThreshould.ToString());
-                    writer.WriteAttributeString("BroadcastBoostersCurrent", BroadcastBoostersCurrent ? bool.TrueString : bool.FalseString);
+                    //writer.WriteAttributeString("MainBridgeCurrentThreshould", MainBridgeCurrentThreshould.ToString());
+                    //writer.WriteAttributeString("ProgBridgeCurrentThreshould", ProgBridgeCurrentThreshould.ToString());
+                    //writer.WriteAttributeString("BroadcastBoostersCurrent", BroadcastBoostersCurrent ? bool.TrueString : bool.FalseString);
 
                     writer.WriteAttributeString("UseWiFi", UseWiFi ? bool.TrueString : bool.FalseString);
                     writer.WriteAttributeString("WiFiSSID", WiFiSSID);
@@ -162,21 +160,21 @@ namespace DTC.Server
         //        Debug.Print("Could not restore settings.");
         //}
 
-        public static Options LoadFromSD()
+        public static Options LoadFromSD(string root)
         {
             Options res = new Options();
 
-            byte[] data = DriveManager.LoadFromSD(fileName);
+            byte[] data = DriveManager.LoadFromSD(root + fileName);
             if (data == null)
-                res.SaveToSD();
+                res.SaveToSD(root);
             else
                 res = Options.FromByteArray(data);
 
-            return res ?? new Options();
+            return res;
         }
-        public void SaveToSD()
+        public void SaveToSD(string root)
         {
-            DriveManager.SaveToSD(ToByteArray(), fileName);
+            DriveManager.SaveToSD(ToByteArray(), root + fileName);
         }
         #endregion
     }

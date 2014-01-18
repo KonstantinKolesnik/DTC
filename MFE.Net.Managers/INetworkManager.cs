@@ -8,8 +8,5 @@ namespace MFE.Net.Managers
         event EventHandler Stopped;
 
         void Start();
-
-        void OnBeforeMessage();
-        void OnAfterMessage();
     }
 }

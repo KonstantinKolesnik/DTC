@@ -6,7 +6,7 @@ namespace DTC.API.Decoders
     {
         private int speed = 0;
         private bool direction = true;
-
+        //private type
 
 
         public LocomotiveDecoder(Guid id)

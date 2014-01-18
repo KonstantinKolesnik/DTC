@@ -105,7 +105,7 @@ namespace MFE.Storage
         }
         public static void SaveToSD(byte[] data, string fileName)
         {
-            if (IsSDMounted && data != null && data.Length > 0)
+            if (data != null && data.Length > 0)
                 using (FileStream fs = File.OpenWrite(fileName))
                 {
                     fs.Write(data, 0, data.Length);
@@ -116,7 +116,7 @@ namespace MFE.Storage
         {
             byte[] data = null;
 
-            if (DriveManager.IsSDMounted && File.Exists(fileName))
+            if (File.Exists(fileName))
                 using (FileStream fs = File.OpenRead(fileName))
                 {
                     data = new byte[fs.Length];

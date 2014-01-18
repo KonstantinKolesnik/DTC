@@ -471,13 +471,7 @@ function createSpeedGauge() {
     //speedGauge.value(speedSlider.value());
 }
 
-
-
-
-
 //----------------------------------------------------------------------------------------------------------------------
-
-
 var speed = 0;
 var forward = true;
 var address = new LocomotiveAddress(7, false);

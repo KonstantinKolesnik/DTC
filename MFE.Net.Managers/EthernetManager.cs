@@ -132,15 +132,6 @@ namespace MFE.Net.Managers
 
             //portNetworkLED.Frequency = 0;//.Set(false);
         }
-
-        public void OnBeforeMessage()
-        {
-            //portNetworkLED.Frequency = 0;//.Set(false);
-        }
-        public void OnAfterMessage()
-        {
-            //portNetworkLED.Frequency = 1000;//.Set(true);
-        }
         #endregion
 
         #region Event handlers

@@ -26,8 +26,7 @@ namespace MFE.Net.Managers
         #region Constructor
         public GadgeteerWiFiManager(WiFi_RS21 wifi_RS21, string ssid, string password)//, Cpu.PWMChannel pinNetworkStatusLED)
         {
-            //blocker = new ManualResetEvent(false);
-            //portNetworkLED = new PWM(pinNetworkStatusLED, 1, 0.5, ledToVcc); // blink LED with 1 Hz
+            //portNetworkLED = new PWM(pinNetworkStatusLED, 1, 0.5, true); // blink LED with 1 Hz
 
             wifiModule = wifi_RS21;
             wifi = wifi_RS21.Interface;
@@ -42,6 +41,8 @@ namespace MFE.Net.Managers
         #region Public methods
         public void Start()
         {
+            //portNetworkLED.Start();
+
             try
             {
                 if (!wifi.IsOpen)
@@ -117,29 +118,20 @@ namespace MFE.Net.Managers
                 Debug.Print("WiFi start failed: " + ex.Message);
             }
         }
-        public void OnBeforeMessage()
-        {
-            //portNetworkLED.DutyCycle = ledToVcc ? 1 : 0;
-        }
-        public void OnAfterMessage()
-        {
-            //portNetworkLED.DutyCycle = ledToVcc ? 0 : 1;
-        }
         #endregion
 
         #region Event handlers
         private void wifi_WirelessConnectivityChanged(object sender, WiFiRS9110.WirelessConnectivityEventArgs e)
         {
             Debug.Print("WirelessConnectivityChanged: " + e.IsConnected.ToString() + " - " + e.NetworkInformation.SSID);
-            //if (wifiModule.NetworkSettings.IPAddress == "0.0.0.0")
-            //    wifi.NetworkInterface.RenewDhcpLease();
-
             if (e.IsConnected)
             {
                 if (wifi.IsActivated) // make sure that the event is fired by WiFi interface, not other networking interface.
                     if (wifi.IsLinkConnected)
                     {
-                        Debug.Print("WiFi connection was established!");
+                        Debug.Print("WiFi connection was established! IPAddress = " + wifiModule.NetworkSettings.IPAddress);
+
+                        //portNetworkLED.DutyCycle = true ? 0 : 1;
 
                         if (Started != null)
                             Started(this, EventArgs.Empty);
@@ -151,7 +143,10 @@ namespace MFE.Net.Managers
                     if (!wifi.IsLinkConnected)
                     {
                         Debug.Print("WiFi connection was dropped or disconnected!");
-                        
+
+                        //portNetworkLED.DutyCycle = 1;
+                        //portNetworkLED.Stop();
+
                         if (Stopped != null)
                             Stopped(this, EventArgs.Empty);
 
@@ -201,6 +196,5 @@ namespace MFE.Net.Managers
 
             return str;
         }
-
     }
 }

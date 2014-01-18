@@ -22,13 +22,10 @@ namespace DTC.Server
     class Model
     {
         #region Fields
-        private const uint optionsID = 0;
         private Options options;
-
-        //private string root = @"\SD"; // for device
         private string root = @"\WINFS"; // for emulator
 
-        private string dbFileName = "Layout.dat";
+        private string dbFileName = @"\DTC\Layout.dat";
         private DBManager dbManager = new DBManager();
 
         //private Booster mainBooster;
@@ -48,7 +45,7 @@ namespace DTC.Server
 
         //private Buttons btns;
 
-        GT.Timer timer;
+        private GT.Timer timerNetworkConnect;
         #endregion
 
         #region Properties
@@ -66,24 +63,18 @@ namespace DTC.Server
 
         public void Start()
         {
-            //InitData();
-            //InitHardware();
+            InitHardware();
             //InitDB();
             InitNetwork();
         }
 
         #region Private methods
-        private void InitData()
-        {
-            //options = Options.LoadFromFlash(optionsID);
-            //ApplyOptions();
-        }
         private void InitHardware()
         {
             HWConfig.Indicators.TurnAllLedsOff();
 
-            timer = new GT.Timer(300);
-            timer.Tick += delegate(GT.Timer t) { HWConfig.Indicators[HWConfig.LEDNetwork] = !HWConfig.Indicators[HWConfig.LEDNetwork]; };
+            timerNetworkConnect = new GT.Timer(500);
+            timerNetworkConnect.Tick += delegate(GT.Timer t) { HWConfig.Indicators[HWConfig.LEDNetwork] = !HWConfig.Indicators[HWConfig.LEDNetwork]; };
 
             HWConfig.SDCard.SDCardMounted += sdCard_Mounted;
             HWConfig.SDCard.SDCardUnmounted += sdCard_Unmounted;
@@ -92,14 +83,14 @@ namespace DTC.Server
                 HWConfig.SDCard.MountSDCard();
                 Thread.Sleep(500);
 
-                //options = Options.LoadFromSD();
+                options = Options.LoadFromSD(HWConfig.SDCard.GetStorageDevice().RootDirectory);
                 //ApplyOptions();
             }
 
-            uart = new SerialPort("COM1", 115200);
-            uart.DataReceived += uart_DataReceived;
-            uart.ErrorReceived += uart_ErrorReceived;
-            uart.Open();
+            //uart = new SerialPort("COM1", 115200);
+            //uart.DataReceived += uart_DataReceived;
+            //uart.ErrorReceived += uart_ErrorReceived;
+            //uart.Open();
 
 
             //mainBooster = new Booster(
@@ -133,62 +124,17 @@ namespace DTC.Server
 
             //btns = new Buttons();
         }
-        private void InitNetwork()
-        {
-            //discoveryListener = new DiscoveryListener();
-
-            //tcpServer = new TCPServer(Options.IPPort);
-            //tcpServer.SessionConnected += new TCPSessionEventHandler(Session_Connected);
-            //tcpServer.SessionDataReceived += new TCPSessionDataReceived(Session_DataReceived);
-            //tcpServer.SessionDisconnected += new TCPSessionEventHandler(Session_Disconnected);
-
-            //wsServer = new WSServer(Options.WSPort);
-            //wsServer.SessionConnected += Session_Connected;
-            //wsServer.SessionDataReceived += Session_DataReceived;
-            //wsServer.SessionDisconnected += Session_Disconnected;
-
-            //tcpServer = new TcpServer(Options.IPPort);
-
-            //httpServer = new HttpServer();
-            //httpServer.OnGetRequest += httpServer_OnGetRequest;
-
-            //if (options.UseWiFi)
-            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);//HardwareConfiguration.PinNetworkLED, 
-            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, "GothicMaestro", "kotyara75");//HardwareConfiguration.PinNetworkLED,
-            networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, "TW", "techwiregreyc");
-            //else
-            //networkManager = new EthernetManager();//HardwareConfiguration.PinNetworkLED);
-
-            networkManager.Started += new EventHandler(Network_Started);
-            networkManager.Stopped += new EventHandler(Network_Stopped);
-
-            StartNetwork();
-        }
-        private void StartNetwork()
-        {
-            //timer.Start();
-            new Thread(delegate
-            {
-                networkManager.Start();
-            }).Start();
-
-            //httpServer.Start("http", 80); // for emulator only!!!
-            //wsServer.Start(); // for emulator only!!!
-            //tcpServer.Start(); // for emulator only!!!
-        }
         private void InitDB()
         {
+            bool dbExists = File.Exists(HWConfig.SDCard.GetStorageDevice().RootDirectory + dbFileName);
             // for test!!!
-            bool dbExists = File.Exists(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\" + dbFileName);
             //if (dbExists)
             //    File.Delete(dbFileName);
 
-            if (dbManager.Open(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\" + dbFileName))
+            if (dbManager.Open(HWConfig.SDCard.GetStorageDevice().RootDirectory + dbFileName))
             {
                 if (!dbExists)
-                {
-                    // add tables;
-                }
+                    CreateDB();
 
                 ////dbManager.Add(new Consist() { Name = "Consist 1", });
                 ////dbManager.Add(new Consist() { Name = "Consist 2", });
@@ -228,6 +174,41 @@ namespace DTC.Server
             //db.ExecuteNonQuery("CREATE Table Locomotives(ID TEXT, Name TEXT, Description TEXT, Protocol INTEGER, ConsistID TEXT, ConsistForward INTEGER)");
             //db.ExecuteNonQuery("CREATE Table Consists(ID TEXT, Name TEXT, Description TEXT)");
         }
+        private void InitNetwork()
+        {
+            //discoveryListener = new DiscoveryListener();
+
+            tcpServer = new TcpServer(Options.IPPort);
+            tcpServer.SessionConnected += Session_Connected;
+            tcpServer.SessionDataReceived += Session_DataReceived;
+            tcpServer.SessionDisconnected += Session_Disconnected;
+
+            wsServer = new WSServer(Options.WSPort);
+            wsServer.SessionConnected += Session_Connected;
+            wsServer.SessionDataReceived += Session_DataReceived;
+            wsServer.SessionDisconnected += Session_Disconnected;
+
+            httpServer = new HttpServer();
+            httpServer.OnGetRequest += httpServer_OnGetRequest;
+
+            //if (options.UseWiFi)
+            networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);
+            //else
+            //networkManager = new EthernetManager();//HWConfig.PinNetworkLED);
+
+            networkManager.Started += new EventHandler(Network_Started);
+            networkManager.Stopped += new EventHandler(Network_Stopped);
+
+            StartNetwork();
+        }
+        private void StartNetwork()
+        {
+            timerNetworkConnect.Start();
+            new Thread(delegate
+            {
+                networkManager.Start();
+            }).Start();
+        }
 
         private void ApplyOptions()
         {
@@ -246,6 +227,12 @@ namespace DTC.Server
             //    timerBoostersCurrent = null;
             //}
         }
+        private void BlinkLED(int led)
+        {
+            HWConfig.Indicators[led] = false;
+            Thread.Sleep(20);
+            HWConfig.Indicators[led] = true;
+        }
         #endregion
 
         #region Event handlers
@@ -260,46 +247,43 @@ namespace DTC.Server
 
         private void Network_Started(object sender, EventArgs e)
         {
-            HWConfig.Mainboard.SetDebugLED(true);
+            timerNetworkConnect.Stop();
+            HWConfig.Indicators[HWConfig.LEDNetwork] = true;
 
-            //timer.Stop();
-            //HWConfig.Indicators[HWConfig.LEDNetwork] = true;
-
-            ////discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
-            //tcpServer.Start();
-
-            //httpServer.Start("http", 80);
-            //wsServer.Start();
+            httpServer.Start("http", 80);
+            wsServer.Start();
+            tcpServer.Start();
+            
+            //discoveryListener.Start(Options.UDPPort, "TyphoonCentralStation");
 
             //NameService ns = new NameService();
             //ns.AddName("TYPHOON", NameService.NameType.Unique, NameService.MsSuffix.Default);
-
-            //Beeper.PlaySound(Beeper.SoundID.Click);
         }
         private void Network_Stopped(object sender, EventArgs e)
         {
-            //Beeper.PlaySound(Beeper.SoundID.PowerOff);
+            httpServer.Stop();
+            wsServer.Stop();
+            tcpServer.Stop();
 
-            //httpServer.Stop();
-            //wsServer.Stop();
+            Thread.Sleep(1000);
 
-            //Thread.Sleep(1000);
-
-            //StartNetwork();
+            StartNetwork();
         }
 
         private void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
         {
+            BlinkLED(HWConfig.LEDNetwork);
+
             if (HWConfig.SDCard.IsCardMounted)
             {
                 if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
                 {
                     //httpServer.ProcessPasswordProtectedArea(request, response);
                 }
-                //else if (path.ToLower().IndexOf("json") != -1)
-                //    ProcessJSONRequest(path, parameters, response);
                 else
                     httpServer.SendFile(HWConfig.SDCard.GetStorageDevice().RootDirectory + "\\DTC" + path, response);
+                
+                BlinkLED(HWConfig.LEDNetwork);
             }
         }
 
@@ -309,7 +293,7 @@ namespace DTC.Server
         }
         private bool Session_DataReceived(TcpSession session, byte[] data)
         {
-            //networkManager.OnBeforeMessage();
+            BlinkLED(HWConfig.LEDNetwork);
 
             NetworkMessageReceiver nmr = session.Tag as NetworkMessageReceiver;
             NetworkMessage[] msgs = nmr.Process(data);
@@ -318,10 +302,11 @@ namespace DTC.Server
                 {
                     NetworkMessage response = ProcessNetworkMessage(msg);
                     if (response != null)
+                    {
                         session.Send(WSDataFrame.WrapString(response.PackToString(nmr.MessageFormat)));
+                        BlinkLED(HWConfig.LEDNetwork);
+                    }
                 }
-
-            //networkManager.OnAfterMessage();
 
             return false; // don't disconnect
         }

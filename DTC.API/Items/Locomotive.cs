@@ -3,14 +3,13 @@ using System;
 
 namespace DTC.API.Items
 {
-    public class Locomotive : LocomotiveDecoder
+    public class Locomotive
     {
-        public Locomotive(Guid id)
-            : base(id)
-        {
-        }
-        public Locomotive(Guid id, string name)
-            : base(id, name)
+        //private ArrayList decoders;
+
+        //private type
+
+        public Locomotive()
         {
         }
     }

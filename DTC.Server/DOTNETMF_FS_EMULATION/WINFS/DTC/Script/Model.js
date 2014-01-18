@@ -56,14 +56,14 @@ function Model() {
     this.IsMainVisible = function () { return this.get("UIState") == UIStateType.Main; }
     this.IsLayoutVisible = function () { return this.get("UIState") == UIStateType.Layout; }
     this.IsOperationVisible = function () { return this.get("UIState") == UIStateType.Operation; }
-    this.IsDecodersVisible = function () { return this.get("UIState") == UIStateType.Decoders; }
+    //this.IsDecodersVisible = function () { return this.get("UIState") == UIStateType.Decoders; }
     this.IsSettingsVisible = function () { return this.get("UIState") == UIStateType.Settings; }
-    this.IsInformationVisible = function () { return this.get("UIState") == UIStateType.Information; }
+    //this.IsInformationVisible = function () { return this.get("UIState") == UIStateType.Information; }
     this.IsFirmwareVisible = function () { return this.get("UIState") == UIStateType.Firmware; }
 
     // Public functions:
     this.Init = function () {
-        //createWebSocket();
+        createWebSocket();
 
         this.MessageManager = new MessageManager(socket);
         this.MessageManager.MessageReceived = onServerMessage;
@@ -97,7 +97,6 @@ function Model() {
 
         function onSocketOpen() {
             model.set("Connected", true);
-            //model.MessageManager.GetPower();
         }
         function onSocketClose() {
             model.set("Connected", false);
@@ -105,7 +104,7 @@ function Model() {
             createWebSocket();
         }
         function onSocketError(e) {
-            showDialog("WebSocket error: " + e);
+            showDialog("WebSocket error");
         }
     }
     function closeWebSocket() {
