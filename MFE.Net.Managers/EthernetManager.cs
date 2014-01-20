@@ -15,7 +15,7 @@ namespace MFE.Net.Managers
         //static EthernetENC28J60 Eth1 = new EthernetENC28J60(add code here to configure it);
         // wifi is same thing
         // static WiFiRS9110 wifi = new WiFiRS9110(......);
-        static EthernetBuiltIn Eth1 = new EthernetBuiltIn();
+        static EthernetBuiltIn ethernet;// = new EthernetBuiltIn();
         private ManualResetEvent blocker = null;
         //private PWM portNetworkLED = null;
         #endregion
@@ -31,6 +31,10 @@ namespace MFE.Net.Managers
             blocker = new ManualResetEvent(false);
             //portNetworkLED = new PWM(pinNetworkStatusLED, 1, 50, false); // blink LED with 1 Hz
 
+            ethernet = new EthernetBuiltIn();
+
+            ethernet.CableConnectivityChanged += new EthernetBuiltIn.CableConnectivityChangedEventHandler(Eth1_CableConnectivityChanged);
+            ethernet.NetworkAddressChanged += new NetworkInterfaceExtension.NetworkAddressChangedEventHandler(Eth1_NetworkAddressChanged);
             //NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         }
         #endregion
@@ -38,30 +42,29 @@ namespace MFE.Net.Managers
         #region Public methods
         public void Start()
         {
-            Eth1.Open();
-            NetworkInterfaceExtension.AssignNetworkingStackTo(Eth1);
+            if (!ethernet.IsOpen)
+                ethernet.Open();
 
-            Eth1.CableConnectivityChanged += new EthernetBuiltIn.CableConnectivityChangedEventHandler(Eth1_CableConnectivityChanged);
-            Eth1.NetworkAddressChanged += new NetworkInterfaceExtension.NetworkAddressChangedEventHandler(Eth1_NetworkAddressChanged);
+            if (!ethernet.NetworkInterface.IsDhcpEnabled)
+                ethernet.NetworkInterface.EnableDhcp();
+            //ethernet.NetworkInterface.EnableStaticIP("192.168.0.110", "255.255.255.0", "192.168.0.1");
 
-            if (!Eth1.NetworkInterface.IsDhcpEnabled)
-                Eth1.NetworkInterface.EnableDhcp();
-            //Eth1.NetworkInterface.EnableStaticIP("192.168.0.110", "255.255.255.0", "192.168.0.1");
+            NetworkInterfaceExtension.AssignNetworkingStackTo(ethernet);
 
-            if (!Eth1.IsCableConnected)
+            // wait for cable:
+            if (!ethernet.IsCableConnected)
             {
                 do
                 {
-                    if (!Eth1.IsCableConnected)
-                    {
-                        Debug.Print("Ethernet cable is not connected yet.");
-                    }
+                    if (!ethernet.IsCableConnected)
+                        Debug.Print("Waiting for ethernet cable...");
                     else
                         break;
                 }
-                while (!blocker.WaitOne(2000, false));
+                while (!blocker.WaitOne(500, false));
             }
 
+            // wait for ip-address set:
             //while (IPAddress.GetDefaultLocalAddress() == IPAddress.Any)
             //{
             //    Debug.Print("IP address is not set yet.");
@@ -147,17 +150,17 @@ namespace MFE.Net.Managers
         {
             Debug.Print("New address for The built-in Ethernet Network Interface ");
 
-            Debug.Print("Is DhCp enabled: " + Eth1.NetworkInterface.IsDhcpEnabled);
-            Debug.Print("Is DynamicDnsEnabled enabled: " + Eth1.NetworkInterface.IsDynamicDnsEnabled);
-            Debug.Print("NetworkInterfaceType " + Eth1.NetworkInterface.NetworkInterfaceType);
+            Debug.Print("Is DhCp enabled: " + ethernet.NetworkInterface.IsDhcpEnabled);
+            Debug.Print("Is DynamicDnsEnabled enabled: " + ethernet.NetworkInterface.IsDynamicDnsEnabled);
+            Debug.Print("NetworkInterfaceType " + ethernet.NetworkInterface.NetworkInterfaceType);
             Debug.Print("Network settings:");
-            Debug.Print("IP Address: " + Eth1.NetworkInterface.IPAddress);
-            Debug.Print("Subnet Mask: " + Eth1.NetworkInterface.SubnetMask);
-            Debug.Print("Default Getway: " + Eth1.NetworkInterface.GatewayAddress);
-            Debug.Print("Number of DNS servers:" + Eth1.NetworkInterface.DnsAddresses.Length);
+            Debug.Print("IP Address: " + ethernet.NetworkInterface.IPAddress);
+            Debug.Print("Subnet Mask: " + ethernet.NetworkInterface.SubnetMask);
+            Debug.Print("Default Getway: " + ethernet.NetworkInterface.GatewayAddress);
+            Debug.Print("Number of DNS servers:" + ethernet.NetworkInterface.DnsAddresses.Length);
 
-            for (int i = 0; i < Eth1.NetworkInterface.DnsAddresses.Length; i++)
-                Debug.Print("DNS Server " + i.ToString() + ":" + Eth1.NetworkInterface.DnsAddresses[i]);
+            for (int i = 0; i < ethernet.NetworkInterface.DnsAddresses.Length; i++)
+                Debug.Print("DNS Server " + i.ToString() + ":" + ethernet.NetworkInterface.DnsAddresses[i]);
 
             Debug.Print("------------------------------------------------------");
         }

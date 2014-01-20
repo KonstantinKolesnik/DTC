@@ -23,6 +23,7 @@ namespace DTC.Server
             HWConfig.SDCard = sdCard;
             HWConfig.Indicators = led_Strip;
             HWConfig.WiFi = wifi_RS21;
+            HWConfig.Ethernet = ethernet_ENC28;
 
             HWConfig.Indicators.TurnAllLedsOff();
 

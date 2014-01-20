@@ -87,10 +87,12 @@ namespace DTC.Server
                 //ApplyOptions();
             }
 
-            //uart = new SerialPort("COM1", 115200);
-            //uart.DataReceived += uart_DataReceived;
-            //uart.ErrorReceived += uart_ErrorReceived;
-            //uart.Open();
+            // UART on socket 4:
+            string portName = GT.Socket.GetSocket(4, true, null, null).SerialPortName;
+            uart = new SerialPort(portName, 115200);
+            uart.DataReceived += uart_DataReceived;
+            uart.ErrorReceived += uart_ErrorReceived;
+            uart.Open();
 
 
             //mainBooster = new Booster(
@@ -190,11 +192,12 @@ namespace DTC.Server
 
             httpServer = new HttpServer();
             httpServer.OnGetRequest += httpServer_OnGetRequest;
+            httpServer.OnResponse += httpServer_OnResponse;
 
             //if (options.UseWiFi)
-            networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);
+            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);//, GT.Socket.GetSocket(18, true, null, null).PWM9);
             //else
-            //networkManager = new EthernetManager();//HWConfig.PinNetworkLED);
+            networkManager = new GadgeteerEthernetManager(HWConfig.Ethernet);//HWConfig.PinNetworkLED);
 
             networkManager.Started += new EventHandler(Network_Started);
             networkManager.Stopped += new EventHandler(Network_Stopped);
@@ -229,9 +232,16 @@ namespace DTC.Server
         }
         private void BlinkLED(int led)
         {
-            HWConfig.Indicators[led] = false;
-            Thread.Sleep(20);
-            HWConfig.Indicators[led] = true;
+            //HWConfig.Indicators[led] = false;
+            //Thread.Sleep(20);
+            //HWConfig.Indicators[led] = true;
+
+            new Thread(delegate
+            {
+                HWConfig.Indicators[led] = false;
+                Thread.Sleep(20);
+                HWConfig.Indicators[led] = true;
+            }).Start();
         }
         #endregion
 
@@ -247,6 +257,9 @@ namespace DTC.Server
 
         private void Network_Started(object sender, EventArgs e)
         {
+            //HWConfig.WiFi.NetworkSettings.IPAddress
+            //HWConfig.Ethernet.Interface.NetworkInterface.IPAddress
+
             timerNetworkConnect.Stop();
             HWConfig.Indicators[HWConfig.LEDNetwork] = true;
 
@@ -285,6 +298,10 @@ namespace DTC.Server
                 
                 BlinkLED(HWConfig.LEDNetwork);
             }
+        }
+        private void httpServer_OnResponse(HttpListenerResponse response)
+        {
+            BlinkLED(HWConfig.LEDNetwork);
         }
 
         private void Session_Connected(TcpSession session)

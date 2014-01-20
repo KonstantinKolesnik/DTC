@@ -2,6 +2,7 @@ using Gadgeteer.Modules.GHIElectronics;
 using GHI.Premium.Net;
 using MFE.Core;
 using Microsoft.SPOT;
+using Microsoft.SPOT.Hardware;
 using System;
 //using System.Net.Sockets;
 using System.Threading;
@@ -58,7 +59,7 @@ namespace MFE.Net.Managers
 
                 NetworkInterfaceExtension.AssignNetworkingStackTo(wifi);
 
-                // scan for network with required SSID:
+                #region scan for network with required SSID:
                 WiFiNetworkInfo[] nis = wifi.Scan(ssid);
                 while (nis == null)
                 {
@@ -67,8 +68,9 @@ namespace MFE.Net.Managers
                     nis = wifi.Scan(ssid);
                 }
                 Debug.Print(WiFiNetworkInfoToString(nis[0]));
+                #endregion
 
-                // scan for all networks:
+                #region scan for all networks:
                 //WiFiNetworkInfo myNi = null;
                 //while (myNi == null)
                 //{
@@ -89,6 +91,7 @@ namespace MFE.Net.Managers
                 //    }
                 //    Debug.Print("-----------------------------------------------------");
                 //}
+                #endregion
 
                 try
                 {
@@ -131,7 +134,7 @@ namespace MFE.Net.Managers
                     {
                         Debug.Print("WiFi connection was established! IPAddress = " + wifiModule.NetworkSettings.IPAddress);
 
-                        //portNetworkLED.DutyCycle = true ? 0 : 1;
+                        //portNetworkLED.DutyCycle = 0;
 
                         if (Started != null)
                             Started(this, EventArgs.Empty);

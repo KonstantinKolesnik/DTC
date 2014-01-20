@@ -12,5 +12,6 @@ namespace DTC.Server
         public static LED_Strip Indicators;
         public static SDCard SDCard;
         public static WiFi_RS21 WiFi;
+        public static Ethernet_ENC28 Ethernet;
     }
 }

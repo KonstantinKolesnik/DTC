@@ -11,7 +11,8 @@ using System.Threading;
 
 namespace MFE.Net.Http
 {
-    public delegate void GETRequestHandler(string path, Hashtable parameters, HttpListenerResponse response);
+    public delegate void GETRequestEventHandler(string path, Hashtable parameters, HttpListenerResponse response);
+    public delegate void ResponseEventHandler(HttpListenerResponse response);
 
     public class HttpServer
     {
@@ -298,7 +299,8 @@ namespace MFE.Net.Http
         #endregion
 
         #region Events
-        public event GETRequestHandler OnGetRequest;
+        public event GETRequestEventHandler OnGetRequest;
+        public event ResponseEventHandler OnResponse;
         #endregion
 
         #region Public methods
@@ -399,9 +401,8 @@ namespace MFE.Net.Http
                 {
                     long fileLength = fs.Length;
                     response.ContentLength64 = fileLength;
-                    //Debug.Print("File: " + path + "; length = " + fileLength);
 
-                    int bufferSize = 1024 * 4;
+                    int bufferSize = 1024 * 64;
                     byte[] buf = new byte[bufferSize];
                     for (long bytesSent = 0; bytesSent < fileLength; )
                     {
@@ -411,6 +412,9 @@ namespace MFE.Net.Http
                         int bytesRead = fs.Read(buf, 0, (int)bytesToRead);
                         response.OutputStream.Write(buf, 0, bytesRead);
                         bytesSent += bytesRead;
+
+                        if (OnResponse != null)
+                            OnResponse(response);
 
                         Thread.Sleep(0);
                     }
@@ -448,18 +452,14 @@ namespace MFE.Net.Http
 
             if (path == "\\")
                 path = "\\index.html";
-            //Debug.Print("File: " + path);
 
-            if (OnGetRequest != null)
-                OnGetRequest(path, parameters, response);
-
-            //if (path.ToLower() == "\\admin") // There is one particular URL that we process differently
-            //{
-            //    ProcessPasswordProtectedArea(request, response);
-            //    return;
-            //}
+            if (path.ToLower() == "\\admin")
+                ProcessPasswordProtectedArea(request, response);
+            else
+                if (OnGetRequest != null)
+                    OnGetRequest(path, parameters, response);
         }
-        private static void ProcessClientPostRequest(HttpListenerContext context)
+        private void ProcessClientPostRequest(HttpListenerContext context)
         {
             const int BUFFER_SIZE = 1024;
 
@@ -568,9 +568,9 @@ namespace MFE.Net.Http
                 response.OutputStream.Write(messageBody, 0, messageBody.Length);
             }
         }
-        private static void ProcessPasswordProtectedArea(HttpListenerRequest request, HttpListenerResponse response)
+        private void ProcessPasswordProtectedArea(HttpListenerRequest request, HttpListenerResponse response)
         {
-            string strResp = "<HTML><BODY>.Net MF Example HTTP Server. Secure Area<p>";
+            string strResp = "<html><body>.Net MF Example HTTP Server. Secure Area<p>";
             if (request.Credentials != null)
             { // Parse and Decode string.
                 Debug.Print("User Name : " + request.Credentials.UserName);
@@ -596,12 +596,14 @@ namespace MFE.Net.Http
                 response.StatusCode = (int)HttpStatusCode.Unauthorized;
                 response.Headers.Add("WWW-Authenticate: Basic realm=\".Net MF Example of Secure Area\"");
             }
+            strResp += "</body></html>";
 
-            // Closes HTML
-            strResp += "</BODY></HTML>";
-            byte[] messageBody = encoder.GetBytes(strResp);
+            byte[] buffer = encoder.GetBytes(strResp);
             response.ContentType = "text/html";
-            response.OutputStream.Write(messageBody, 0, messageBody.Length);
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+
+            if (OnResponse != null)
+                OnResponse(response);
         }
         private void Response404(HttpListenerResponse response)
         {
@@ -621,8 +623,12 @@ namespace MFE.Net.Http
             string strResp = "HTTP/1.1 404 File Not Found\r\n";
             response.ContentType = "text/html";
             response.StatusCode = (int)HttpStatusCode.NotFound;
+            
             byte[] buffer = encoder.GetBytes(strResp);
             response.OutputStream.Write(buffer, 0, buffer.Length);
+
+            if (OnResponse != null)
+                OnResponse(response);
         }
 
         private static string FillDirectoryContext(string strFilePath, HttpListenerRequest request)
