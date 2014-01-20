@@ -115,27 +115,27 @@
     <None Include="Resources\small.tinyfnt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MFE.Core\MFE.Core.csproj">
-      <Project>{03D2EE7A-7DE1-4329-804E-6823D20A53B2}</Project>
+    <ProjectReference Include="..\..\MFE\MFE.Core\MFE.Core.csproj">
+      <Project>{8EE96EBA-F6D8-4433-A72E-AED3A5A0EFDA}</Project>
       <Name>MFE.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MFE.Data\MFE.Data.csproj">
+    <ProjectReference Include="..\..\MFE\MFE.Data\MFE.Data.csproj">
       <Project>{7D33EA61-AAD1-4499-AD04-3540AF13B614}</Project>
       <Name>MFE.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MFE.Net.Managers\MFE.Net.Managers.csproj">
+    <ProjectReference Include="..\..\MFE\MFE.Net.Managers\MFE.Net.Managers.csproj">
       <Project>{A8ACC028-99A0-4E9F-84F7-33E9D08AF087}</Project>
       <Name>MFE.Net.Managers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MFE.Net.Messaging\MFE.Net.Messaging.csproj">
+    <ProjectReference Include="..\..\MFE\MFE.Net.Messaging\MFE.Net.Messaging.csproj">
       <Project>{632B23F9-A020-4C66-93A3-DE9AF4529CB9}</Project>
       <Name>MFE.Net.Messaging</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MFE.Net\MFE.Net.csproj">
+    <ProjectReference Include="..\..\MFE\MFE.Net\MFE.Net.csproj">
       <Project>{D87CB0D5-ED06-4E01-AA00-FFCDD0A3D708}</Project>
       <Name>MFE.Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MFE.Storage\MFE.Storage.csproj">
+    <ProjectReference Include="..\..\MFE\MFE.Storage\MFE.Storage.csproj">
       <Project>{B3AF4DFB-585D-477A-981A-0F5E69EC7A89}</Project>
       <Name>MFE.Storage</Name>
     </ProjectReference>
