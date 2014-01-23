@@ -27,7 +27,7 @@ namespace DTC.Server {
         /// <summary>The LED Strip module using socket 18 of the mainboard.</summary>
         private Gadgeteer.Modules.GHIElectronics.LED_Strip led_Strip;
         
-        /// <summary>The Ethernet_ENC28  (Premium) module using socket 3 of the mainboard.</summary>
+        /// <summary>The Ethernet_ENC28  (Premium) module (not connected).</summary>
         private Gadgeteer.Modules.GHIElectronics.Ethernet_ENC28 ethernet_ENC28;
         
         /// <summary>This property provides access to the Mainboard API. This is normally not necessary for an end user program.</summary>
@@ -56,7 +56,7 @@ namespace DTC.Server {
             this.usbClientDP = new GTM.GHIElectronics.UsbClientDP(8);
             this.sdCard = new GTM.GHIElectronics.SDCard(9);
             this.led_Strip = new GTM.GHIElectronics.LED_Strip(18);
-            this.ethernet_ENC28 = new GTM.GHIElectronics.Ethernet_ENC28(3);
+            Microsoft.SPOT.Debug.Print("The module \'ethernet_ENC28\' was not connected in the designer and will be null.");
         }
     }
 }

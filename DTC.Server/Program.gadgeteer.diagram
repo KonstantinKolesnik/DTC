@@ -137,12 +137,5 @@
         </socketUseShape>
       </nestedChildShapes>
     </moduleShape>
-    <socketConnector Id="7d19d963-d746-48a2-895f-980a07b8538b" edgePoints="[(8.21641732150427 : 1.265); (7.805 : 1.265); (7.805 : 2.985); (6.925 : 2.985); (6.925 : 3.39641732150427)]" fixedFrom="NotFixed" fixedTo="NotFixed">
-      <socketUseReferencesSocketMoniker Id="085dc2cd-85be-475e-8d2c-d08294294b01" />
-      <nodes>
-        <socketUseShapeMoniker Id="ca84a10d-d676-40aa-9b69-86d1ca18509d" />
-        <socketShapeMoniker Id="fd8586f3-b454-4133-b65d-917e474a4f9e" />
-      </nodes>
-    </socketConnector>
   </nestedChildShapes>
 </gadgeteerDSLDiagram>

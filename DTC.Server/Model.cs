@@ -191,13 +191,14 @@ namespace DTC.Server
             wsServer.SessionDisconnected += Session_Disconnected;
 
             httpServer = new HttpServer();
+            httpServer.OnRequest += httpServer_OnRequest;
             httpServer.OnGetRequest += httpServer_OnGetRequest;
             httpServer.OnResponse += httpServer_OnResponse;
 
             //if (options.UseWiFi)
-            //networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);//, GT.Socket.GetSocket(18, true, null, null).PWM9);
+            networkManager = new GadgeteerWiFiManager(HWConfig.WiFi, options.WiFiSSID, options.WiFiPassword);
             //else
-            networkManager = new GadgeteerEthernetManager(HWConfig.Ethernet);//HWConfig.PinNetworkLED);
+            //networkManager = new GadgeteerEthernetManager(HWConfig.Ethernet);
 
             networkManager.Started += new EventHandler(Network_Started);
             networkManager.Stopped += new EventHandler(Network_Stopped);
@@ -283,6 +284,11 @@ namespace DTC.Server
             StartNetwork();
         }
 
+        private void httpServer_OnRequest(HttpListenerRequest request)
+        {
+            //BlinkLED(ledNetwork);
+            HWConfig.Indicators[6] = true;
+        }
         private void httpServer_OnGetRequest(string path, Hashtable parameters, HttpListenerResponse response)
         {
             BlinkLED(HWConfig.LEDNetwork);
